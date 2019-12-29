@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#000000" />
+		<title>Vanilla JS Brain Client Example</title>
+
+		<!-- To run this example, just clone the repo (or save this HTML locally)
+			and open this file in your browser! You can specify the Brain IP address
+			by adding "?brainIp=<ipaddress>" to the URL (file path) in the address bar.
+			If no IP is given, defaults to "127.0.0.1:8000". You can also change
+			the IP it will use in the code below, just look for the `getBrainClient` call.
+		-->
+
+		<!-- Import the client - you could use a local copy: -->
+		<!-- <script src='../../dist/es5/kramer-brain-client.js'></script> -->
+		<!-- ... instead, we'll import from the Netlify CDN -->
+		<script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script>
+
+		<!-- Simple, basic styling -->
+		<style>
+			html, body {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				background-color: #282c34;
+				color: white;
+				min-height: 100vh;
+				overflow: hidden;
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+			}
+
+			#current-time {
+				font-family: 'Courier New', Courier, monospace;
+				font-size: calc(10px + 15vmin);
+				margin: 3rem 0 0;
+			}
+
+			#status {
+				font-style: italic;
+			}
+		</style>
+	</head>
+	<body>
+		<noscript>You need to enable JavaScript to run this app.</noscript>
+
+		<!-- We'll use javascript to write to this element -->
+		<h1 id="current-time"></h1>
+		<p id="status"></p>
+
+		<script>
+			// Wait for the script and page to load
+			document.addEventListener("DOMContentLoaded", () => {
+				// kramer-brain-client attaches to window as KramerBrainClient
+				// and all classes are available in that object
+				const { BrainClient, BrainDevice } = window.KramerBrainClient;
+
+				// Quiet chatty logging
+				BrainClient.Logger.setLogLevel(BrainClient.Logger.LogLevel.None);
+
+				// Start our client connecting
+				const client = BrainClient.getBrainClient({ 
+					param:   'brainIp',       // look for 'brainIp' in the query string
+					default: '127.0.0.1:8000' // if no brainIp given, default to this IP
+				});
+
+				// Display status in HTML
+				client.on(BrainClient.EVENTS.CONNECTION_STATUS_CHANGED, 
+					({status}) => document.querySelector('#status').innerHTML = status);
+
+				// Grab the system device and start listening for changes
+				client.getSystemDevice().then(device => {
+
+					// Our display element above
+					const displayElm = document.querySelector('#current-time');
+
+					// States we care about on the system device
+					// Holds current values for display
+					const stateValues = {
+						HOUR_STATE:   0,
+						MINUTE_STATE: 0,
+						SECOND_STATE: 0
+					};
+
+					// Utility to normalize and pad a number to two digits
+					const pad = value => {
+						const num = parseFloat(value);
+						return isNaN(num) ? "00" : ((num < 10 ? "0" : "") + num);
+					};
+					
+					// Re-render the UI
+					const updateDisplay = () => {
+						displayElm.innerHTML = 
+							Object.values(stateValues)
+								.map(number => pad(number))
+								.join(':')
+					};
+
+					// Listen for changes to the System device
+					// and update the UI when changes received
+					device.on(BrainDevice.STATE_CHANGED, change => {
+
+						// Only update if it's one of our states we care about
+						if(stateValues.hasOwnProperty(change.id)) {
+
+							// Save the new value from the Brain
+							stateValues[change.id] = change.normalizedValue;
+							
+							// Update the UI
+							updateDisplay();
+						}
+					});
+					
+					// Update the initial display with all zeros
+					updateDisplay();
+				});
+			});
+		</script>
+	</body>
+</html>

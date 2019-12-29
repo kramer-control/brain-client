@@ -1,0 +1,66 @@
+{
+  "name": "@kramer/brain-client",
+  "version": "1.0.0",
+  "description": "Client for Kramer Control Brains",
+  "module": "src/index.js",
+  "main": "dist/cjs/index.js",
+  "browser": "dist/es5/kramer-brain-client.min.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kramer-control/brain-client"
+  },
+  "directories": {
+    "examples": "examples"
+  },
+  "scripts": {
+    "test": "mocha --reporter spec",
+    "coverage": "nyc npm run test",
+    "build:docs": "jsdoc -c jsdoc.json",
+    "build:rollup": "rollup --config",
+    "build:netlify": "npm run build:rollup && npm run build:docs && mv dist docs/dist",
+    "build": "npm run build:rollup && npm run build:docs && npm run test",
+    "prepublishOnly": "npm run build",
+    "publish:github": "git push github --all"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "author": "Josiah Bryan <jbryan@kramerav.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.7.6",
+    "@babel/preset-env": "^7.7.7",
+    "@rollup/plugin-json": "^4.0.1",
+    "better-docs": "^1.4.7",
+    "chai": "^4.2.0",
+    "esm": "^3.2.25",
+    "jsdoc": "^3.6.3",
+    "mocha": "^6.2.2",
+    "nyc": "^15.0.0",
+    "rollup": "^1.27.14",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-filesize": "^6.2.1",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-progress": "^1.1.1",
+    "rollup-plugin-terser": "^5.1.3",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-uglify": "^6.0.4"
+  },
+  "dependencies": {
+    "async-retry": "^1.2.3",
+    "events": "^3.0.0",
+    "isomorphic-fetch": "^2.2.1",
+    "isomorphic-ws": "^4.0.1",
+    "rxjs": "^6.5.4",
+    "usage-stats": "^0.9.4",
+    "ws": "^7.2.1",
+    "bufferutil": "^4.0.1",
+    "utf-8-validate": "^5.0.2"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0"
+  }
+}

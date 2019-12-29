@@ -1,0 +1,50 @@
+{
+	"_source": "Based on https://raw.githubusercontent.com/SoftwareBrothers/example-design-system/master/jsdoc.json",
+	"tags": {
+		"allowUnknownTags": true
+	},
+	"source": {
+		"include": ["./dist/cjs"],
+		"includePattern": "\\.(js|jsx)$"
+	},
+	"plugins": [
+		"better-docs/component",
+		"better-docs/category",
+		"plugins/markdown"
+	],
+	"opts": {
+		"encoding": "utf8",
+		"destination": "docs/",
+		"recurse": true,
+		"verbose": true,
+		"readme": "./README.md",
+		"template": "node_modules/better-docs",
+		"tutorials": "./tutorials"
+	},
+	"templates": {
+		"better-docs": {
+			  "name": "BrainClient",
+			  "navigation": [
+				  {
+					  "label": "BitBucket",
+					  "href": "https://bitbucket.org/irule/brain-js-client"
+					},
+					{
+					  "label": "GitHub",
+					  "href": "https://github.com/kramer-control/brain-client"
+					},
+					{
+					  "label": "NPM",
+					  "href": "https://npmjs.com/kramer/brain-client"
+					}
+			  ]
+		},
+		"default": {
+		  "staticFiles": {
+			"include": [
+				"./assets"
+			]
+		  }
+	  }
+	}
+}

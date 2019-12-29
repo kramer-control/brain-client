@@ -1,0 +1,8 @@
+{
+	"1GettingStarted":  { "title": "Getting Started" },
+	"2Connecting":      { "title": "Basics/Connecting" },
+	"3SendingCommands": { "title": "Basics/Sending Commands" },
+	"4ReactUsage":      { "title": "Frameworks/Using with React" },
+	"5AngularUsage":    { "title": "Frameworks/Using with Angular" },
+	"6VanillaJSUsage":  { "title": "Frameworks/Using with Vanilla JS" }
+}
