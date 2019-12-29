@@ -28,6 +28,10 @@ The IIFE build is also available on unpkg (all versions) or Netlify (only the la
 <script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
 ```
 
+## Getting Started
+
+> See the [Getting Started Tutorial](./tutorial-100-GettingStarted.html)
+
 ## Example Connection
 
 ```javascript

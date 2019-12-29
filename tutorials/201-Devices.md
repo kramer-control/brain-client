@@ -1,6 +1,6 @@
 # Devices
 
-[BrainDevice](../docs/BrainDevice.html) instances ("Devices") represent physical devices connected to the Brain.
+[BrainDevice](./BrainDevice.html) instances ("Devices") represent physical devices connected to the Brain.
 
 Devices are created/configured/setup in the [Kramer Control Builder](https://kramercontrol.com/builder/) and assigned to your space and gateways within that space in the Builder.
 

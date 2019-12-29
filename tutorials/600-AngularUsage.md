@@ -2,7 +2,7 @@
 
 `BrainClient` provides a convenient method to provide all events from the client as an [RxJS](https://rxjs-dev.firebaseapp.com/) [Observable](https://rxjs-dev.firebaseapp.com/api/index/class/Observable).
 
-> See [BrainClient.asObservable](../docs/BrainClient.html#asObservable)
+> See [BrainClient.asObservable](./BrainClient.html#asObservable)
 
 The shape of the message emitted by the Observable from this method looks like:
 ```javascript
@@ -11,7 +11,7 @@ const message = {
 	...data
 }
 ```
-The `event` field above is always and only one of the values from [BrainClient.EVENTS](../docs/BrainClient.html#.EVENTS).
+The `event` field above is always and only one of the values from [BrainClient.EVENTS](./BrainClient.html#.EVENTS).
 The `data` spread operator above indicates that all other fields from the event (e.g. the args 
 that would be passed to your event callback if you used the `on` method to attach callbacks) 
 are spread into the `message`, so you receive a single flat-ish object. 

@@ -1,6 +1,6 @@
 # React Usage
 
-Integrating with React is simplified thanks to a convenient prepacked collection of [Hooks](https://reactjs.org/docs/hooks-intro.html) that we provide to do several common tasks with the Brain. See our [ReactHooks class documentation](../docs/BrainClient.ReactHooks.html) for API docs on the hooks we provide.
+Integrating with React is simplified thanks to a convenient prepacked collection of [Hooks](https://reactjs.org/docs/hooks-intro.html) that we provide to do several common tasks with the Brain. See our [ReactHooks class documentation](./BrainClient.ReactHooks.html) for API docs on the hooks we provide.
 
 Note: To use React Hooks, you will need to be using React version >=16.8 in your project.
 
@@ -8,7 +8,7 @@ Note: To use React Hooks, you will need to be using React version >=16.8 in your
 
 ## Getting a Client Handle
 
-We recommend using the [BrainClient.getBrainClient](../docs/BrainClient.html#.getBrainClient) method to get the [BrainClient](docs/BrainClient.html#BrainClient) handle, since it is guaranteed to return a [BrainClient](docs/BrainClient.html#BrainClient) instance immediately, and always returns the same `BrainClient` for the same IP. 
+We recommend using the [BrainClient.getBrainClient](./BrainClient.html#.getBrainClient) method to get the [BrainClient](./BrainClient.html#BrainClient) handle, since it is guaranteed to return a [BrainClient](./BrainClient.html#BrainClient) instance immediately, and always returns the same `BrainClient` for the same IP. 
 
 ## Complete Example
 

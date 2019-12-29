@@ -1,6 +1,6 @@
 # Getting Started
 
-`BrainClient` can be used on the server or in a browser. The primary requirement is the server/client on which you run `BrainClient` must have direct network access to the Kramer Control Brain you want to control. How you do that is up to you - it could be over your local LAN, over a VPN, or even (but not recommended) via NAT/port-forwarding to a static global IP. The network specifics are left up to you. You simply provide the `BrainClient` with the IP (and optional port) to communicate with.
+[BrainClient](./BrainClient.html) can be used on the server or in a browser. The primary requirement is the server/client on which you run [BrainClient](./BrainClient.html) must have direct network access to the Kramer Control Brain you want to control. How you do that is up to you - it could be over your local LAN, over a VPN, or even (but not recommended) via NAT/port-forwarding to a static global IP. The network specifics are left up to you. You simply provide the [BrainClient](./BrainClient.html) with the IP (and optional port) to communicate with.
 
 ## Installation
 
@@ -20,6 +20,17 @@ async function main() {
 main().catch(e => console.error(e)).finally(x => process.exit(x));
 ```
 
+## Next Steps
+
+> See the [Connecting to the Brain Tutorial](./tutorial-200-connecting.html)
+
+## Related API Docs
+
+Jump right into the API:
+
+> [BrainClient](./BrainClient.html) Documentation
+> [BrainDevice](./BrainDevice.html) Documentation
+ 
 ## Important Notes
 
 ### Async/Await

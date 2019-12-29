@@ -48,19 +48,17 @@ You can provide `opts` as the second arg, and they will only be used for new cli
 
 Note that successful connections are automatically cached, even if you do not use `getBrainClient` to create the connection. E.g. if you use the `connectToBrain` method shown earlier and it successfully connects the socket, it will automatically cache it's instance so if you use `getBrainClient` later, it will return the cached instance.
 
-Note that the `BrainClient` also automatically removes itself from the cache when the socket disconnects (and re-adds itself automatically if reconnection is successful.) This is to prevent memory leaks and dead references.
-
 ## React Usage
 
-We recommend using the [BrainClient.getBrainClient](../docs/BrainClient.html#.getBrainClient) method in React or other functional-based UI environments, since it is guaranteed to return a [BrainClient](docs/BrainClient.html#BrainClient) instance immediately, and always returns the same `BrainClient` for the same IP. 
+We recommend using the [BrainClient.getBrainClient](./BrainClient.html#.getBrainClient) method in React or other functional-based UI environments, since it is guaranteed to return a [BrainClient](./BrainClient.html#BrainClient) instance immediately, and always returns the same `BrainClient` for the same IP. 
 
-We also provide a convenient collection of [React Hooks](../docs/BrainClient.ReactHooks.html) for using BrainClient from functional components in React.
+We also provide a convenient collection of [React Hooks](./BrainClient.ReactHooks.html) for using BrainClient from functional components in React.
 
 > Related tutorial: [Using With React](./tutorial-500-ReactUsage.html)
 
 ## Angular Usage
 
-We recommend using the [.asObservable](../docs/BrainClient.html#asObservable) method in Angular for ease of interopability with RxJS. You should use [BrainClient.getBrainClient](../docs/BrainClient.html#.getBrainClient) to get the reference to the Brain Client. 
+We recommend using the [BrainClient.asObservable](./BrainClient.html#asObservable) method when using with Angular for ease of interopability with RxJS. You should use [BrainClient.getBrainClient](./BrainClient.html#.getBrainClient) to get the reference to the Brain Client. 
 
 You can wrap the `getBrainClient` call in an `@Injectable` Angular service for clean integration into your Angular app. And a sample `@Injectable` service is provided in the following related tutorial:
 
