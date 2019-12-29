@@ -8,7 +8,7 @@ Latest API documentation is available at **[https://kramer-brain-client.netlify.
 
 ## Install via NPM
 
-```
+```shell
 $ npm install --save @kramer/brain-client
 ```
 
@@ -23,7 +23,7 @@ const { BrainClient } = require('@kramer/brain-client');
 ## CDN Usage
 The IIFE build is also available on unpkg (all versions) or Netlify (only the latest):
 
-```
+```html
 <script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
 <script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
 ```

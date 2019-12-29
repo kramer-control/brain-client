@@ -6,7 +6,7 @@ This project illustrates a simple example of using the BrainClient from a React 
 
 For additional information on using the Brain Client with React, see:
 
-* [BrainClient + React Tutorial](https://kramer-brain-client.netlify.com/tutorial-4reactusage)
+* [BrainClient + React Tutorial](https://kramer-brain-client.netlify.com/tutorial-500-reactusage)
 * [BrainClient React Hooks Documentation](https://kramer-brain-client.netlify.com/brainclient.reacthooks)
 
 Most of the rest of this README is from the boilerplate from `creat-react-app`. Cheers!

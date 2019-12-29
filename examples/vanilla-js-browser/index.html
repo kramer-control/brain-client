@@ -60,13 +60,17 @@
 				// Quiet chatty logging
 				BrainClient.Logger.setLogLevel(BrainClient.Logger.LogLevel.None);
 
-				// Start our client connecting
+				// Start our client connecting.
+				// See notes on the "auto" mode for BrainClient.getBrainClient for details on how this works
+				// Link: https://kramer-brain-client.netlify.com/brainclient#.getBrainClient
 				const client = BrainClient.getBrainClient({ 
 					param:   'brainIp',       // look for 'brainIp' in the query string
 					default: '127.0.0.1:8000' // if no brainIp given, default to this IP
 				});
 
 				// Display status in HTML
+				// See: https://kramer-brain-client.netlify.com/brainclient#.CONNECTION
+				// for details on the possible connection states
 				client.on(BrainClient.EVENTS.CONNECTION_STATUS_CHANGED, 
 					({status}) => document.querySelector('#status').innerHTML = status);
 

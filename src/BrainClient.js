@@ -156,9 +156,13 @@ export default class BrainClient extends EventEmitter {
 	 * Static method to retrieve/create a `BrainClient` instance. The `ipAddress` is used as the cache key - if no client exists for that IP, 
 	 * then a new one will be created and initalized. However, if an existing client is found, that client will be returned as-is.
 	 * 
-	 * Note: If you pass an object like `{ auto: true }` as the `ipAddress`, BrainClient will check the window querystring for 'brainIp=<whatever>', and if not found, will use the origin host/port as brain IP
-	 * 
 	 * The client is initalized using the {@link BrainClient#connectToBrain} method.
+	 * 
+	 * **Auto** mode: 
+	 * * If you pass an object like `{ auto: true }` as the `ipAddress`, BrainClient will check the window query string for `brainIp=<whatever>`, and if not found, will use the origin host/port as brain IP. 
+	 * * If you pass an object like `{ auto: true, default: "some.host:8000" }`, BrainClient will still check the query string, but it will fallback to "some.host:8000" instead of the origin.
+	 * * If you pass an object like `{ param: "someParam", default: "some.host:8000" }`, BrainClient will check for `someParam=<whatever>` instead of "brainIp", and fallback to the value given in "default" if not found. 
+	 * * In all cases, default is optional. If "auto" or "param" given and "default" not specified, it will fallback to the window origin (e.g. the host/port that the page using BrainClient was served from.) This "origin" mode is only really useful if you are taking advantage of the "bundle upload" mode in the Kramer UI of the SL brains to serve your custom javascript from the Brain's built-in webserver at the /bundle/ URL.
 	 * 
 	 * Note that this static method is intentionally designed to NOT be async - in otherwords, it is guaranteed to return 
 	 * a {@link BrainClient} instance right away. The {@link BrainClient#connectToBrain} method is NOT called right away 

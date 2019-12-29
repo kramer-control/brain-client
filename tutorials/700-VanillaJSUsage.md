@@ -2,10 +2,13 @@
 
 You can use BrainClient from Node or even directly from the browser without any transpilation or framework required.
 
-The BrainClient is available via the UNPKG CDN for direct importing without any transpilation or build tools on your end:
+When using via the `<script>` tag in your browser, the classes provided by this package are attached to the `window.KramerBrainClient` object. For example, to get the `BrainClient` class, use `window.KramerBrainClient.BrainClient`.
 
-```
-<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/kramer-brain-client.min.js"></script>
+The BrainClient is available via the UNPKG CDN and Netlify CDN for direct importing without any transpilation or build tools on your end:
+
+```html
+<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
+<script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
 ```
 
 For a complete Vanilla JS example, see [examples/vanilla-js-browser](https://github.com/kramer-control/brain-client/blob/master/examples/vanilla-js-browser/index.html). Here is a simplified example:

@@ -23,14 +23,65 @@ class ErrorInvalidState extends Error {}
 class ErrorInvalidCommand extends Error {}
 
 /**
- * Interface for a single device attached to a Brain. See {@link BrainClient} for client details.
+ * Interface for a single device attached to a Brain. See {@link BrainClient#getDevice} on how to
+ * get an instance of this class for a single device, or {@link BrainClient#getDevices} to get all
+ * devices attached to the connected brain. 
  * 
- * NOTE: You should never call the constructor directly, devices will be created by 
+ * BrainDevices have three main purposes:
+ * * Enumerating *properties* about the device, such as `id` and `name` (properties are documented below under <a href='#BrainDevice'>the constructor</a>)
+ * * Providing access to *commands* (enumerate and send commands)
+ * * Providing access to *states* (enumerate and receive changes and set custom states)
+ * 
+ * **<h3>Commands</h3>** 
+ * See the following methods for more info on working with commands:
+ * * Get all the commands available: {@link BrainDevice#getCommands}
+ * * Send a command to the device: {@link BrainDevice#sendCommand}
+ * 
+ * > Related tutorial: <a href='./tutorial-400-sendingcommands.html'>Basics/Sending Commands</a>
+ * 
+ * **<h3>States</h3>**
+ * See the following methods for more info on working with states:
+ * * Get all the commands available: {@link BrainDevice#getStates} 
+ * * Send a custom state (only relevant for [System Devices]{@link BrainDevice#isSystemDevice}): {@link BrainDevice#setCustomState}
+ * 
+ * **<h3>Listening for State Changes</h3><a name='statechanges'></a>**
+ * State Changes are sent via the `BrainDevice.STATE_CHANGED` event. To listen state changes
+ * on the device, just attach an event listener, like this:
+ * 
+ * ```javascript
+ * someDevice.on(BrainDevice.STATE_CHANGED, change => {
+ * 	console.log(`Device ${someDevice.id} > State ${change.id} is now "${change.normalizedValue}`);
+ * })
+ * ```
+ *
+ * It's important to realize the `BrainDevice.STATE_CHANGED` event fires for ALL states 
+ * on the device. You must filter on the `id` property of the payload to see if the event 
+ * represents a change of the state you are interested in.
+ * 
+ * What's in a state change payload? Glad you asked. Here you go:
+ * ```javascript
+ * const stateChangeExample = {
+ * 	id: "SECOND_STATE", // The ID of the state, usually a grokable string like this
+ * 	key: undefined, // The State Key - often unused, usually blank/undefined
+ * 	name: "Current Second", // Human-readable state name
+ * 	value: "58", // The current value of the state as a string
+ * 	normalizedValue: "58", // The normalized value of the state (normalized by the Brain), also a string, usually identical to the `value` but not always.
+ * }
+ * ```
+ * 
+ * **<h3>Nota Bene</h3>**
+ * *NOTE:* You should never call the constructor directly, devices will be created by 
  * the BrainClient when enumerating devices internally.
  * 
- * NOTE: This class is not exported directly, but accessible as `BrainClient.BrainDevice` if you ever need
+ * *NOTE:* This class is not exported directly, but accessible as `BrainClient.BrainDevice` if you ever need
  * to access it for typechecking, etc.
  * 
+ * @property {string} id ID of the device
+ * @property {string} name Name of the Device
+ * @property {string} description Device description, possibly blank
+ * @property {string} created_by User in Kramer Control that created the device in the Space
+ * @property {string} created_date Date that this device was added to the Space in Kramer Control
+ * @property {object} driver Simplified device driver, for internal use, but feel free to examine if interested. Used by all the state/command methods internally. 
  */
 export default class BrainDevice extends EventEmitter {
 
@@ -173,7 +224,12 @@ export default class BrainDevice extends EventEmitter {
 	}
 
 	/**
-	 * Returns true if this is the system device for this Brain
+	 * Returns true if this is the system device for this Brain.
+	 * 
+	 * The **System Device** is a virtual device provided internally by the Brain
+	 * and it provides core services such as time, weather, brain status, 
+	 * custom states, etc. Only the System Device can have custom states.
+	 * 
 	 * @returns {boolean} `true` if this is the system device
 	 */
 	isSystemDevice() {
@@ -433,6 +489,11 @@ export default class BrainDevice extends EventEmitter {
 	 * as the event name, the attached {@link BrainClient} will automatically inform the brain
 	 * to start sending state changes for this device.
 	 * 
+	 * Note: The `STATE_CHANGED` event fires for ALL states on the device. You must filter
+	 * on the `id` property of the payload to see if the event represents a change of the state
+	 * you are interested in.
+	 * > Related: See notes at the top of <a href='#statechanges'>this file titled "Listening for State Changes</a>
+	 * 
 	 * This overrides [EventEmitter]{@link https://nodejs.org/api/events.html#events_class_eventemitter}'s `on` function to intercept the event name,
 	 * but still useses `EventEmitter` to handle events, so you can use the 
 	 * inheritted `off` from `EventEmitter` to stop listening for changes.
@@ -598,7 +659,7 @@ Object.assign(BrainDevice, {
 
 	/**
 	 * @property {string} STATE_CHANGED - Static class property, event name that is emitted when a state on 
-	 * this device changes on the Brain. Use like: `BrainDevice.STATE_CHANGED`
+	 * this device changes on the Brain. Use like: `BrainDevice.STATE_CHANGED`. See notes at the top of <a href='#statechanges'>this file titled "Listening for State Changes</a>.
 	 * @memberof BrainDevice
 	 */
 	STATE_CHANGED: "STATE_CHANGED",

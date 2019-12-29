@@ -1,9 +1,13 @@
 # Connecting to the Brain
 
-In each example below, we assume you have imported the `BrainClient` class/namespace via some method. We also assume you are able to execute `await` functions (i.e. you're running inside a function marked `async`.)
+A number of examples for connecting to the Brain are provided below.
+
+In each of the below examples, we assume you have imported the `BrainClient` class/namespace via some method. We also assume you are able to execute `await` functions (i.e. you're running inside a function marked `async`.)
 
 ```javascript
-const BrainClient = require('@kramer/brain-client');
+const { BrainClient } = require('@kramer/brain-client');
+// If using <script> tag: const { BrainClient } = window.KramerBrainClient;
+// ES6 imports work too:  import { BrainClient } from '@kramer/brain-client';
 async function main() {
 	// whatever
 }
@@ -51,3 +55,26 @@ Note that the `BrainClient` also automatically removes itself from the cache whe
 We recommend using the [BrainClient.getBrainClient](../docs/BrainClient.html#.getBrainClient) method in React or other functional-based UI environments, since it is guaranteed to return a [BrainClient](docs/BrainClient.html#BrainClient) instance immediately, and always returns the same `BrainClient` for the same IP. 
 
 We also provide a convenient collection of [React Hooks](../docs/BrainClient.ReactHooks.html) for using BrainClient from functional components in React.
+
+> Related tutorial: [Using With React](./tutorial-500-ReactUsage.html)
+
+## Angular Usage
+
+We recommend using the [.asObservable](../docs/BrainClient.html#asObservable) method in Angular for ease of interopability with RxJS. You should use [BrainClient.getBrainClient](../docs/BrainClient.html#.getBrainClient) to get the reference to the Brain Client. 
+
+You can wrap the `getBrainClient` call in an `@Injectable` Angular service for clean integration into your Angular app. And a sample `@Injectable` service is provided in the following related tutorial:
+
+> Related tutorial: [Using With Angular](./tutorial-600-AngularUsage.html)
+
+## Vanilla JS Usage
+
+You can import this library via a `<script>` tag from one of the following CDNs:
+
+```html
+<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
+<script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
+```
+
+When using via the `<script>` tag in your browser, the classes provided by this package are attached to the `window.KramerBrainClient` object. For example, to get the `BrainClient` class, use `window.KramerBrainClient.BrainClient`.
+
+> Related tutorial: [Using With Vanilla JS](./tutorial-700-VanillaJSUsage.html)

@@ -2,24 +2,11 @@
 
 Commands are defined in the device drivers for devices. Commands are automatically enumerated when connecting to the Brain. To execute a command, you first have to get a `BrainDevice` reference then call the `sendCommand` method on that device. For detailed information on sending commands, continue reading below.
 
-## Get a Device Reference
+## Overview
 
-To send a command, you have to use a `BrainDevice` device instance. Grab your handy `BrainClient` reference and call the `getDevices` method (or use the system device by executing `getSystemDevice` on the client.
+For a general overview of Devices and information on getting a device instance, see the following related tutorial:
 
-Example:
-```javascript
-// Create the client
-const bc = new BrainClient();
-
-// Wait for the brain to accept the connection
-await bc.connectToBrain(BrainClient.DEFAULT_BRAIN_IP);
-
-// Grab a reference to the device to actually execute the command
-const sys = await bc.getSystemDevice();
-
-// Get all devices
-const devices = await bc.getDevices();
-```
+> Related Tutorial: [Working with Devices](./tutorial-201-Devices.html)
 
 ## Find out Commands a Device Supports
 

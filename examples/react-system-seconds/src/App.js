@@ -7,21 +7,22 @@ import { BrainClient, ReactHooks } from '@kramer/brain-client';
 const { useDevice, useDeviceState, useConnectionStatus } = ReactHooks;
 
 function App() {
-	const ipAddress = "127.0.0.1:8000";
-
-	// Setting to 'auto' will check querystring 
-	// for 'brainIp=<whatever>', and if not found,
-	// will use the origin host/port as brain IP
-	// const ipAddress = { auto: true };
+	// See notes on the "auto" mode for BrainClient.getBrainClient for details on how this works
+	// Link: https://kramer-brain-client.netlify.com/brainclient#.getBrainClient
+	const ipAddress = { auto: true, default: "127.0.0.1:8000" };
 
 	// Quiet chatty logging
 	BrainClient.Logger.setLogLevel(BrainClient.Logger.LogLevel.None);
 
+	// Grab our client reference
 	const bc      = BrainClient.getBrainClient(ipAddress);
-	const device  = useDevice(bc, "System Device");
-	const status  = useConnectionStatus(bc);
 
-	window.bc= bc;
+	// Ggrab a state variable containing a BrainDevice instance for the "System" device
+	const device  = useDevice(bc, "System Device");
+	// Grab a state variable containing the live connection status
+	// See: https://kramer-brain-client.netlify.com/brainclient#.CONNECTION
+	// for details on the possible connection states
+	const status  = useConnectionStatus(bc);
 
 	const WatchState = ({state}) => {
 		const sv = useDeviceState(device, state);

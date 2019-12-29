@@ -1,6 +1,9 @@
 
 /**
- * BrainInfo describes the fields from the 'general' API route for the brain.
+ * `BrainInfo` describes the fields from the 'general' API route for the brain. 
+ * 
+ * You can access an instance of this class containing the following properties
+ * by `await`ing {@link BrainClient#brainInfo}.
  * 
  * You'll never need to create this directly, this is simply included for documentation purposes.
  * 

@@ -1,8 +1,10 @@
 {
-	"1GettingStarted":  { "title": "Getting Started" },
-	"2Connecting":      { "title": "Basics/Connecting" },
-	"3SendingCommands": { "title": "Basics/Sending Commands" },
-	"4ReactUsage":      { "title": "Frameworks/Using with React" },
-	"5AngularUsage":    { "title": "Frameworks/Using with Angular" },
-	"6VanillaJSUsage":  { "title": "Frameworks/Using with Vanilla JS" }
+	"100-GettingStarted":  { "title": "Getting Started" },
+	"200-Connecting":      { "title": "Basics/Connecting" },
+	"201-Devices":         { "title": "Basics/Working with Devices" },
+	"300-States":          { "title": "Basics/Watching States" },
+	"400-SendingCommands": { "title": "Basics/Sending Commands" },
+	"500-ReactUsage":      { "title": "Frameworks/Using with React" },
+	"600-AngularUsage":    { "title": "Frameworks/Using with Angular" },
+	"700-VanillaJSUsage":  { "title": "Frameworks/Using with Vanilla JS" }
 }
