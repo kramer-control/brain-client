@@ -6,6 +6,15 @@ Stand-alone javascript client for [Kramer Control's Brains](https://www.kramerav
 
 Latest API documentation is available at **[https://kramer-brain-client.netlify.com/](https://kramer-brain-client.netlify.com/)**
 
+## Getting Started
+
+* See the [Getting Started Tutorial](./tutorial-100-GettingStarted.html)
+* API: [BrainClient](./BrainClient.html) - Core class, everything starts here
+* API: [BrainDevice](./BrainDevice.html) - Everything for working with devices
+* [Using with React](./tutorial-500-ReactUsage.html)
+* [Using with Angular](./tutorial-600-AngularUsage.html)
+* [Using with Vanilla JS](./tutorial-700-VanillaJSUsage.html)
+
 ## Install via NPM
 
 ```shell
@@ -18,6 +27,10 @@ import { BrainClient } from '@kramer/brain-client';
 
 // For Node 8+
 const { BrainClient } = require('@kramer/brain-client');
+
+// Vanilla Javascript via the <script> tag
+const { BrainClient } = window.KramerBrainClient;
+
 ```
 
 ## CDN Usage
@@ -28,14 +41,12 @@ The IIFE build is also available on unpkg (all versions) or Netlify (only the la
 <script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
 ```
 
-## Getting Started
-
-> See the [Getting Started Tutorial](./tutorial-100-GettingStarted.html)
-
 ## Example Connection
 
 ```javascript
 const BrainClient = require('@kramer/brain-client');
+// If using <script> tag: const { BrainClient } = window.KramerBrainClient;
+// ES6 imports work too:  import { BrainClient } from '@kramer/brain-client';
 
 async function main() {
 	const bc = new BrainClient();
@@ -50,7 +61,7 @@ Note: The above code expects you have a brain running locally. Change the IP as 
 
 ## More Examples
 
-See all examples on GitHub at (https://github.com/kramer-control/brain-client/tree/master/examples)
+See all examples on GitHub at [https://github.com/kramer-control/brain-client/tree/master/examples](https://github.com/kramer-control/brain-client/tree/master/examples):
 
 * [examples/connect.js](https://github.com/kramer-control/brain-client/blob/master/examples/connect.js) - Basic connection, similar to the usage shown above
 * [examples/command-info.js](https://github.com/kramer-control/brain-client/blob/master/examples/command-info.js) - Illustrates getting information about commands on a specific device

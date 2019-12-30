@@ -4,12 +4,16 @@
 
 ## Installation
 
-`npm install --save @kramer/brain-client`
+```bash
+npm install --save @kramer/brain-client
+```
 
 ## Basic Usage
 
 ```javascript
 const BrainClient = require('@kramer/brain-client');
+// If using <script> tag: const { BrainClient } = window.KramerBrainClient;
+// ES6 imports work too:  import { BrainClient } from '@kramer/brain-client';
 
 async function main() {
 	const bc = new BrainClient();
@@ -22,14 +26,27 @@ main().catch(e => console.error(e)).finally(x => process.exit(x));
 
 ## Next Steps
 
-> See the [Connecting to the Brain Tutorial](./tutorial-200-connecting.html)
+Now that you have the module installed, you should connect to your Brain device:
+
+* See the [Connecting to the Brain Tutorial](./tutorial-200-connecting.html)
 
 ## Related API Docs
 
 Jump right into the API:
 
-> [BrainClient](./BrainClient.html) Documentation
-> [BrainDevice](./BrainDevice.html) Documentation
+* Core API: [BrainClient](./BrainClient.html) - Core class, everything starts here
+* Device API: [BrainDevice](./BrainDevice.html) - Everything for working with devices
+* See [BrainClient.EVENTS](./BrainClient.html#.EVENTS) for events emitted by `BrainClient`.
+* See [BrainClient.CONNECTION](BrainClient.html#.CONNECTION) for connection states of the `BrainClient`
+
+## Frameworks
+
+Tutorials on using with popular frameworks:
+
+* [Using with React](./tutorial-500-ReactUsage.html)
+* [Using with Angular](./tutorial-600-AngularUsage.html)
+* [Using with Vanilla JS](./tutorial-700-VanillaJSUsage.html)
+
  
 ## Important Notes
 

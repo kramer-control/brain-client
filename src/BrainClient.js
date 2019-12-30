@@ -121,10 +121,10 @@ ConnectionWatchdog.WATCHDOG_DEADMAN_TIMER_MS = 15 * 1000;
 /**
  * Event-based async client for [Kramer Control Brains]{@link https://www.kramerav.com/us/products/control-and-management/control-processors?groupId=3&subgroupId=284}.
  * 
- * Please see these other documentation resources related to this class:
+ * Related documentation resources:
+ * * See {@link BrainDevice} for the device API to control devices (send commands and receive state changes)
  * * See {@link BrainClient.EVENTS} for events emitted by `BrainClient`.
  * * See {@link BrainClient.CONNECTION} for connection states used in {@link BrainClient#getConnectionStatus}
- * * See {@link BrainDevice} for the device API to control devices (send commands and receive state changes)
  * 
  */
 export default class BrainClient extends EventEmitter {
@@ -158,12 +158,6 @@ export default class BrainClient extends EventEmitter {
 	 * 
 	 * The client is initalized using the {@link BrainClient#connectToBrain} method.
 	 * 
-	 * **Auto** mode: 
-	 * * If you pass an object like `{ auto: true }` as the `ipAddress`, BrainClient will check the window query string for `brainIp=<whatever>`, and if not found, will use the origin host/port as brain IP. 
-	 * * If you pass an object like `{ auto: true, default: "some.host:8000" }`, BrainClient will still check the query string, but it will fallback to "some.host:8000" instead of the origin.
-	 * * If you pass an object like `{ param: "someParam", default: "some.host:8000" }`, BrainClient will check for `someParam=<whatever>` instead of "brainIp", and fallback to the value given in "default" if not found. 
-	 * * In all cases, default is optional. If "auto" or "param" given and "default" not specified, it will fallback to the window origin (e.g. the host/port that the page using BrainClient was served from.) This "origin" mode is only really useful if you are taking advantage of the "bundle upload" mode in the Kramer UI of the SL brains to serve your custom javascript from the Brain's built-in webserver at the /bundle/ URL.
-	 * 
 	 * Note that this static method is intentionally designed to NOT be async - in otherwords, it is guaranteed to return 
 	 * a {@link BrainClient} instance right away. The {@link BrainClient#connectToBrain} method is NOT called right away 
 	 * (on a new instance) - it is delayed until the next clock tick. This is done so that callers can attach event listeners,
@@ -176,7 +170,20 @@ export default class BrainClient extends EventEmitter {
 	 * console.log("Caching worked? ", (bc1 === bc2) ? true : false);
 	 * ```
 	 * 
-	 * @param {string} ipAddress IP and optional port to connect to. Example: `10.0.1.123:8000`. Note: If you pass an object like `{ auto: true, default: 'something' }`, BrainClient will check the window querystring for 'brainIp=<whatever>', and if not found, will use the `default` param or origin host/port as brain IP if no `default` param given. You can also specify `param: "someOtherParam"` instead of `auto: true` to use a different query string param other than "brainIp".
+	 * <h3>Auto mode</h3>
+	 * 
+	 * If you pass an object like `{ auto: true }` as the `ipAddress`, BrainClient will check the window query string for `brainIp=<whatever>`, and if not found, will use the origin host/port as brain IP. 
+	 * 
+	 * If you pass an object like `{ auto: true, default: "some.host:8000" }`, BrainClient will still check the query string, but it will fallback to "some.host:8000" instead of the origin.
+	 * 
+	 * If you pass an object like `{ param: "someParam", default: "some.host:8000" }`, BrainClient will check for `someParam=<whatever>` instead of "brainIp", and fallback to the value given in "default" if not found. 
+	 * 
+	 * In all cases, default is optional. If "auto" or "param" given and "default" not specified, it will fallback to the window origin (e.g. the host/port that the page using BrainClient was served from.) This "origin" mode is only really useful if you are taking advantage of the "bundle upload" mode in the Kramer UI of the SL brains to serve your custom javascript from the Brain's built-in webserver at the /bundle/ URL.
+	 * 
+	 * @param {string|object} ipAddress IP and optional port to connect to. Example: `10.0.1.123:8000`. Note: If you pass an object like `{ auto: true, default: 'something' }`, BrainClient will check the window querystring for 'brainIp=<whatever>', and if not found, will use the `default` param or origin host/port as brain IP if no `default` param given. You can also specify `param: "someOtherParam"` instead of `auto: true` to use a different query string param other than "brainIp".
+	 * @param {boolean=} ipAddress.auto If `true`, BrainClient will check the window query string for `brainIp=<whatever>`, and if not found, will use the origin host/port as brain IP. 
+	 * @param {string=} ipAddress.param BrainClient will use the `param` value to check the query string for an IP address (this will set `.auto` to true)
+	 * @param {string=} ipAddress.default If you use `.auto` or `.param` to turn on auto mode, and no IP is found in the query string, then BrainCient will fallback to `.default`. If `.default` is not given and `.auto` or `.param` is given, then BrainClient will instead fallback to the origin host/port serving the page.
 	 * @param {object} opts Options to pass to the {@link BrainClient} constructor. See the constructor for all options honored. However, one option the constructor doesn't consume is the `pin` option, below.
 	 * @param {string|function} opts.pin PIN string or callback function to get PIN. Callback will only be executed if the Brain indicates a PIN is required. See {@link BrainClient#setupConnection} for more notes on the callback. 
 	 */
@@ -249,14 +256,14 @@ export default class BrainClient extends EventEmitter {
 	 * await bc.connectToBrain("127.0.0.1");
 	 * ```
 	 * 
-	 * @param {string} ip IP address of Brain to connect to, with optional port, like "127.0.0.1:8000" - port defaults to 8000 if not specified
+	 * @param {string} ipAddress IP address of Brain to connect to, with optional port, like "127.0.0.1:8000" - port defaults to 8000 if not specified
 	 * @param {string|function} pin PIN string or callback function to get PIN. Callback will only be executed if the Brain indicates a PIN is required. See {@link BrainClient#setupConnection} for more notes on the callback.
 	 * @throws {Error} May throw errors from {@link BrainClient#setupConnection} - see that method for Errors that could be thrown.
 	 */
-	async connectToBrain(ip, pin) {
-		this.usage.track('connectToBrain', { ip });
+	async connectToBrain(ipAddress, pin) {
+		this.usage.track('connectToBrain', { ipAddress });
 
-		await this.prepareConnection(ip);
+		await this.prepareConnection(ipAddress);
 
 		// Bail out if failure
 		if(this.getConnectionStatus() === BrainClient.CONNECTION_FAILURE) {
@@ -673,6 +680,7 @@ export default class BrainClient extends EventEmitter {
 	/**
 	 * Retrieve a {@link BrainDevice} based on name or ID of the device
 	 * @param {sring} deviceNameOrId - Name or ID of the device to retrieve
+	 * @returns {BrainDevice|null} Returns {@link BrainDevice} instance if `deviceNameOrId` found, or `null` if no matching device found.
 	 */
 	async getDevice(deviceNameOrId) {
 		const deviceLookup = await this.getDevices();
@@ -1017,8 +1025,8 @@ export default class BrainClient extends EventEmitter {
 	 * @returns {Observable} RxJS Observable object - see [RxJS Observable docs]{@link https://rxjs-dev.firebaseapp.com/api/index/class/Observable} for API docs.
 	 */
 	asObservable() {
-		if(!this._rxSubject || this._rxSubject.isStopped) {
-			// const { Subject } = require('rxjs/Rx');
+		if(!this._rxSubject || 
+			this._rxSubject.isStopped) {
 			this._rxSubject = new Subject();
 		}
 

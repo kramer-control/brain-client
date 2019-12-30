@@ -13,7 +13,7 @@ Each Brain has at minimum one device - a "System Device". System Devices are "vi
 ### Custom States
 Custom States are states that are defined by you, the designer of the space, in the [Kramer Control Builder](https://kramercontrol.com/builder/). Custom States are the only states than can be set directly via the Brain Client. You cannot define custom states via the Brain Client.
 
-> To set a custom state, see [BrainDevice.setCustomState](./BrainDevice.html#setCustomState).
+* To set a custom state, see [BrainDevice.setCustomState](./BrainDevice.html#setCustomState).
 
 # Get a Device Reference
 
@@ -37,7 +37,7 @@ const devices = await bc.getDevices();
 const device = BrainClient.ReactHooks.useDevice("System Device");
 ```
 
-> For more information on using with React, see: [Using with React](./tutorial-500-ReactUsage.html)
+* For more information on using with React, see: [Using with React](./tutorial-500-ReactUsage.html)
 
 # Using Devices
 
@@ -51,16 +51,16 @@ All devices (including the System Device) have three primary functions for you a
 
 Properties available on each `BrainDevice` are described in the API docs under the constructor.
 
-> See: [BrainDevice()](./BrainDevice.html#BrainDevice) under "Properties"
+* See: [BrainDevice()](./BrainDevice.html#BrainDevice) under "Properties"
 
 ## Sending Commands
 
 Working with Device Commands is described in detail in the following related tutorial:
 
-> See: [Basics/Sending Commands](./tutorial-400-SendingCommands.html)
+* See: [Basics/Sending Commands](./tutorial-400-SendingCommands.html)
 
 ## Watch States
 
 Working with and watching Device States is described in greater detail in the following related tutorial:
 
-> See: [Basics/States](./tutorial-300-States.html)
+* See: [Basics/States](./tutorial-300-States.html)

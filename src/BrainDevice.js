@@ -36,13 +36,17 @@ class ErrorInvalidCommand extends Error {}
  * See the following methods for more info on working with commands:
  * * Get all the commands available: {@link BrainDevice#getCommands}
  * * Send a command to the device: {@link BrainDevice#sendCommand}
- * 
- * > Related tutorial: <a href='./tutorial-400-sendingcommands.html'>Basics/Sending Commands</a>
+ *
+ * Related tutorial: 
+ * * See: <a href='./tutorial-400-sendingcommands.html'>Basics/Sending Commands</a>
  * 
  * **<h3>States</h3>**
  * See the following methods for more info on working with states:
  * * Get all the commands available: {@link BrainDevice#getStates} 
  * * Send a custom state (only relevant for [System Devices]{@link BrainDevice#isSystemDevice}): {@link BrainDevice#setCustomState}
+ * 
+ * Related tutorial: 
+ * * See: <a href='./tutorial-500-states.html'>Basics/Watching States</a>
  * 
  * **<h3>Listening for State Changes</h3><a name='statechanges'></a>**
  * State Changes are sent via the `BrainDevice.STATE_CHANGED` event. To listen state changes
@@ -68,6 +72,9 @@ class ErrorInvalidCommand extends Error {}
  * 	normalizedValue: "58", // The normalized value of the state (normalized by the Brain), also a string, usually identical to the `value` but not always.
  * }
  * ```
+ * 
+ * Related tutorial: 
+ * * See: <a href='./tutorial-500-states.html'>Basics/Watching States</a>
  * 
  * **<h3>Nota Bene</h3>**
  * *NOTE:* You should never call the constructor directly, devices will be created by 
@@ -262,7 +269,7 @@ export default class BrainDevice extends EventEmitter {
 	 * Returns an object containing only custom states. If this is not the system device, returns null.
 	 */
 	async getCustomStates() {
-		await  this._ensureStateValues();
+		await this._ensureStateValues();
 		if(!this.isSystemDevice())
 			return null;
 		return this._customStatesById;

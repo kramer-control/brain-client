@@ -54,7 +54,7 @@ We recommend using the [BrainClient.getBrainClient](./BrainClient.html#.getBrain
 
 We also provide a convenient collection of [React Hooks](./BrainClient.ReactHooks.html) for using BrainClient from functional components in React.
 
-> Related tutorial: [Using With React](./tutorial-500-ReactUsage.html)
+* Related tutorial: [Using With React](./tutorial-500-ReactUsage.html)
 
 ## Angular Usage
 
@@ -62,7 +62,7 @@ We recommend using the [BrainClient.asObservable](./BrainClient.html#asObservabl
 
 You can wrap the `getBrainClient` call in an `@Injectable` Angular service for clean integration into your Angular app. And a sample `@Injectable` service is provided in the following related tutorial:
 
-> Related tutorial: [Using With Angular](./tutorial-600-AngularUsage.html)
+* Related tutorial: [Using With Angular](./tutorial-600-AngularUsage.html)
 
 ## Vanilla JS Usage
 
@@ -75,4 +75,4 @@ You can import this library via a `<script>` tag from one of the following CDNs:
 
 When using via the `<script>` tag in your browser, the classes provided by this package are attached to the `window.KramerBrainClient` object. For example, to get the `BrainClient` class, use `window.KramerBrainClient.BrainClient`.
 
-> Related tutorial: [Using With Vanilla JS](./tutorial-700-VanillaJSUsage.html)
+* Related tutorial: [Using With Vanilla JS](./tutorial-700-VanillaJSUsage.html)
