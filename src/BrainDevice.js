@@ -46,7 +46,7 @@ class ErrorInvalidCommand extends Error {}
  * * Send a custom state (only relevant for [System Devices]{@link BrainDevice#isSystemDevice}): {@link BrainDevice#setCustomState}
  * 
  * Related tutorial: 
- * * See: <a href='./tutorial-500-states.html'>Basics/Watching States</a>
+ * * See: <a href='./tutorial-300-states.html'>Basics/Watching States</a>
  * 
  * **<h3>Listening for State Changes</h3><a name='statechanges'></a>**
  * State Changes are sent via the `BrainDevice.STATE_CHANGED` event. To listen state changes

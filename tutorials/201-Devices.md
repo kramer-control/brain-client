@@ -63,4 +63,4 @@ Working with Device Commands is described in detail in the following related tut
 
 Working with and watching Device States is described in greater detail in the following related tutorial:
 
-* See: [Basics/States](./tutorial-300-States.html)
+* See: [Basics/Device States](./tutorial-300-States.html)

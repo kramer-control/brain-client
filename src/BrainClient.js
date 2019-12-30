@@ -1384,10 +1384,13 @@ export default class BrainClient extends EventEmitter {
 	 * if it desired, no ill side effects. 
 	 * 
 	 * However, a more user-friendly way of watching
-	 * for state changes would be to get the `BrainDevice` instance you want to work with
-	 * and calling `<device>.on(BrainDevice.STATE_CHANGE, myCallback)`. Internally,
-	 * `BrainDevice` will automatically notify the Brain to send state changes when you
-	 * attach the event handler for the `BrainDevice.STATE_CHANGE` event to that device.
+	 * for state changes would be to get the {@link BrainDevice} instance you want to work with
+	 * and calling {@link BrainDevice#on}, for example:
+	 * ```javascript
+	 * device.on(BrainDevice.STATE_CHANGED, myCallback)
+	 * ```
+	 * 
+	 * When you attach a listener to the `STATE_CHANGED` event, {@link BrainDevice#on} will automatically notify the Brain to send state changes using this method.
 	 * 
 	 * @param {string} device_id Required, device ID of the device on the Brain to watch
 	 * @param {Array} states Optional array of states, currently unused in the latest Brain software versions
