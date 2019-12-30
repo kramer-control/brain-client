@@ -105,3 +105,9 @@ const { SYSTEM_STATE } = await sys.sendCommand('SET_SYSTEM_USE', {
 // Confirm the change by printing to the console
 console.dir({ currentState, newStateParam, SYSTEM_STATE, expectedResult: newStateParam === SYSTEM_STATE });
 ```
+
+## Related Tutorial
+
+Once you've mastered working with Device Commands, we recommend reading about Device States:
+
+* Related Tutorial: [Device States](./tutorial-300-states.html)

@@ -32,6 +32,9 @@ class ErrorInvalidCommand extends Error {}
  * * Providing access to *commands* (enumerate and send commands)
  * * Providing access to *states* (enumerate and receive changes and set custom states)
  * 
+ * Additional device overview information can be found the following tutorial:
+ * * See: <a href='./tutorial-201-devices.html'>Basics/Working With Devices</a>
+ * 
  * **<h3>Commands</h3>** 
  * See the following methods for more info on working with commands:
  * * Get all the commands available: {@link BrainDevice#getCommands}
@@ -73,8 +76,7 @@ class ErrorInvalidCommand extends Error {}
  * }
  * ```
  * 
- * Related tutorial: 
- * * See: <a href='./tutorial-500-states.html'>Basics/Watching States</a>
+ * Also see related tutorial: <a href='./tutorial-500-states.html'>Basics/Watching States</a>
  * 
  * **<h3>Nota Bene</h3>**
  * *NOTE:* You should never call the constructor directly, devices will be created by 
@@ -233,7 +235,7 @@ export default class BrainDevice extends EventEmitter {
 	/**
 	 * Returns true if this is the system device for this Brain.
 	 * 
-	 * The **System Device** is a virtual device provided internally by the Brain
+	 * The `System Device` is a virtual device provided internally by the Brain
 	 * and it provides core services such as time, weather, brain status, 
 	 * custom states, etc. Only the System Device can have custom states.
 	 * 
@@ -258,6 +260,9 @@ export default class BrainDevice extends EventEmitter {
 
 	/**
 	 * Get a hash of state IDs => state objects for this device
+	 * 
+	 * Also see related tutorial: <a href='./tutorial-300-states.html'>Basics/Device States</a>
+	 *
 	 * @returns {object} Object containing keys of state IDs and values being the state info
 	 */
 	async getStates() {
@@ -267,6 +272,8 @@ export default class BrainDevice extends EventEmitter {
 
 	/**
 	 * Returns an object containing only custom states. If this is not the system device, returns null.
+	 * 
+	 * For more information on Custom States, <a href='./tutorial-300-states.html'>see the "Device States" tutorial</a>.
 	 */
 	async getCustomStates() {
 		await this._ensureStateValues();
@@ -277,6 +284,8 @@ export default class BrainDevice extends EventEmitter {
 
 	/**
 	 * Gets information about the state, including current `value` and `normalizedValue`
+	 *
+	 * Also see related tutorial: <a href='./tutorial-300-states.html'>Basics/Device States</a>
 	 * 
 	 * @param {string} key State ID or State Name
 	 * @returns {object|null} Object describing the state or `null` if the state doesn't exist
@@ -288,6 +297,8 @@ export default class BrainDevice extends EventEmitter {
 
 	/**
 	 * Get hash of commands with keys being the ID and the values being the info about the command
+	 *
+	 * Also see related tutorial: <a href='./tutorial-400-sendingcommands.html'>Basics/Sending Commands</a>
 	 * 
 	 * See {@link BrainDevice#getCommand} for documentation on what each command looks like.
 	 * 
@@ -346,6 +357,8 @@ export default class BrainDevice extends EventEmitter {
 	 *
 	 * See the associated [examples/command-info.js]{@link https://github.com/kramer-control/brain-client/blob/master/examples/command-info.js} for a complete example showing how to get the `params` from the command.
 	 * 
+	 * Also see related tutorial: <a href='./tutorial-400-sendingcommands.html'>Basics/Sending Commands</a>
+	 * 
 	 * @param {string} key Command ID or Name
 	 * @returns {object|null} Returns an object describing the command or `null` if the command doesn't exist
 	 */
@@ -358,6 +371,8 @@ export default class BrainDevice extends EventEmitter {
 	 * 
 	 * **NOTE:** The concept of "Custom States" (and hence, this method) is only relevant on the System Device ({@link BrainDevice#isSystemDevice} must return `true`)
 	 * otherwise calling this method will throw an error.
+	 * 
+	 * For more information on device states and custom states, see the <a href='./tutorial-300-states.html'>Basics/Device States</a> tutorial.
 	 * 
 	 * @param {string} key State ID or Name - throws {@link BrainDevice.ErrorInvalidState} if the ID/Name is not a defined custom state (must be defined in the KC Builder)
 	 * @param {any}    value Any valid value
@@ -425,6 +440,8 @@ export default class BrainDevice extends EventEmitter {
 	 *	SYSTEM_STATE: 'ON'
 	 * });
 	 * ```
+	 * 
+	 * Also see the related tutorial: <a href='./tutorial-400-sendingcommands.html'>Basics/Sending Commands</a>
 	 * 
 	 * @param {string|object} key Command ID, command Name, or command object - throws {@link BrainDevice.ErrorInvalidCommand} if given a command ID or name that doesn't exist
 	 * @param {object} params Key/value object of params for the command

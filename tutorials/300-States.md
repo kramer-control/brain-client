@@ -82,9 +82,8 @@ await systemDevice.setCustomState("My Custom State", Math.ceil(Math.random() * 1
 See the following complete example for setting a custom state:
 * [examples/set-custom-state.js](https://github.com/kramer-control/brain-client/blob/master/examples/set-custom-state.js)
 
-
-## Next Tutorial
+## Related Tutorial
 
 Once you've mastered working with states, we recommend reading about Sending Commands:
 
-* Next Tutorial: [Sending Commands](./tutorial-400-SendingCommands.html)
+* Related Tutorial: [Sending Commands](./tutorial-400-SendingCommands.html)

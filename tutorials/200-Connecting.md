@@ -16,6 +16,18 @@ main().catch(e => console.error(e)).finally(x => process.exit(x));
 
 ## Basic Connection
 
+Before you can call any of the `connectToBrain` examples below, you must first create a client object using the [BrainClient constructor](./BrainClient.html#BrainClient). For example:
+
+```javascript
+const bc = new BrainClient();
+```
+
+See the API docs for optional parameters for the constructor:
+
+* [BrainClient constructor API Docs](./BrainClient.html#BrainClient)
+
+## `connectToBrain` - Direct Connection
+
 This is the simplest method of connecting - just use the `connectToBrain` method and give it the IP, then `await` the result. The method will return once the Brain is fully connected and has authorized the connection.
 
 ```javascript
@@ -36,7 +48,7 @@ await bc.connectToBrain("127.0.0.1:8080", () => {
 
 Note that the callback is only executed when the Brain informs the client that it must provide a non-empty string as a PIN. If the Brain accepts the default empty-string PIN, the callback you provide will not be executed at all.
 
-## Cached Connection
+## `getBrainClient` - Cached Connection
 
 You can take advantage of automatic built-in caching of the connections to reuse clients. To access or create a cached client, use the `BrainClient.getBrainClient(ip, opts)` static method.
 
@@ -47,6 +59,14 @@ const bc = BrainClient.getBrainClient("127.0.0.1:8080");
 You can provide `opts` as the second arg, and they will only be used for new clients if the IP is not already cached. `opts` are the same as the `BrainClient` constructor opts, with one exception - you can also pass a `pin` opt, which functions the same as shown above for the `connectToBrain` method, e.g. either a `string` preconfigured PIN or a `function` for a callback.
 
 Note that successful connections are automatically cached, even if you do not use `getBrainClient` to create the connection. E.g. if you use the `connectToBrain` method shown earlier and it successfully connects the socket, it will automatically cache it's instance so if you use `getBrainClient` later, it will return the cached instance.
+
+## Next Tutorial
+
+Once you've decided how to connect to the Brain, we recommend reading the Devices tutorial and then read about sending commands and working with device states:
+
+* Next Tutorial: [Working With Devices](./tutorial-201-devices.html)
+* [Sending Commands](./tutorial-400-SendingCommands.html)
+* [Device States](./tutorial-300-States.html)
 
 ## React Usage
 
