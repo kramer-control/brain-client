@@ -28,7 +28,7 @@ See the API docs for optional parameters for the constructor:
 
 ## `connectToBrain` - Direct Connection
 
-This is the simplest method of connecting - just use the `connectToBrain` method and give it the IP, then `await` the result. The method will return once the Brain is fully connected and has authorized the connection.
+This is the simplest method of connecting - just use the [connectToBrain](./BrainClient.html#connectToBrain) method and give it the IP, then `await` the result. The method will return once the Brain is fully connected and has authorized the connection.
 
 ```javascript
 await bc.connectToBrain("127.0.0.1:8080");
@@ -50,7 +50,7 @@ Note that the callback is only executed when the Brain informs the client that i
 
 ## `getBrainClient` - Cached Connection
 
-You can take advantage of automatic built-in caching of the connections to reuse clients. To access or create a cached client, use the `BrainClient.getBrainClient(ip, opts)` static method.
+You can take advantage of automatic built-in caching of the connections to reuse clients. To access or create a cached client, use the [BrainClient.getBrainClient(ipAddress, opts)](./BrainClient.html#.getBrainClient) static method.
 
 ```javascript
 const bc = BrainClient.getBrainClient("127.0.0.1:8080");
