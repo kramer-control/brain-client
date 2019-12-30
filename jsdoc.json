@@ -1,5 +1,4 @@
 {
-	"_source": "Based on https://raw.githubusercontent.com/SoftwareBrothers/example-design-system/master/jsdoc.json",
 	"tags": {
 		"allowUnknownTags": true,
 		"dictionaries": ["jsdoc"]
@@ -10,8 +9,6 @@
 		"excludePattern": "(node_modules/|docs)"
 	},
 	"plugins": [
-		"better-docs/component",
-		"better-docs/category",
 		"plugins/markdown"
 	],
 	"opts": {
@@ -22,7 +19,5 @@
 		"readme": "./README.md",
 		"template": "node_modules/boxy-jsdoc-template",
 		"tutorials": "./tutorials"
-	},
-	"templates": {
 	}
 }
