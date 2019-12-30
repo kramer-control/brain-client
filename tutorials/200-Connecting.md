@@ -69,7 +69,7 @@ You can wrap the `getBrainClient` call in an `@Injectable` Angular service for c
 You can import this library via a `<script>` tag from one of the following CDNs:
 
 ```html
-<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
+<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/es5/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
 <script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
 ```
 

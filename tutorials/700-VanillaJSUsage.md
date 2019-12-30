@@ -7,7 +7,7 @@ When using via the `<script>` tag in your browser, the classes provided by this 
 The BrainClient is available via the UNPKG CDN and Netlify CDN for direct importing without any transpilation or build tools on your end:
 
 ```html
-<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
+<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/es5/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
 <script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
 ```
 
@@ -15,7 +15,7 @@ For a complete Vanilla JS example, see [examples/vanilla-js-browser](https://git
 
 ```html
 <!-- kramer-brain-client attaches to window as KramerBrainClient and all classes are available in that object -->
-<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/kramer-brain-client.min.js"></script>
+<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/es5/kramer-brain-client.min.js"></script>
 
 <!-- We'll use javascript to write to this element -->
 <h1 id="seconds"></h1>
