@@ -8,12 +8,12 @@ Latest API documentation is available at **[https://kramer-brain-client.netlify.
 
 ## Getting Started
 
-* See the [Getting Started Tutorial](./tutorial-100-GettingStarted.html)
-* API: [BrainClient](./BrainClient.html) - Core class, everything starts here
-* API: [BrainDevice](./BrainDevice.html) - Everything for working with devices
-* [Using with React](./tutorial-500-ReactUsage.html)
-* [Using with Angular](./tutorial-600-AngularUsage.html)
-* [Using with Vanilla JS](./tutorial-700-VanillaJSUsage.html)
+* See the [Getting Started Tutorial](https://kramer-brain-client.netlify.com/tutorial-100-GettingStarted.html)
+* API: [BrainClient](https://kramer-brain-client.netlify.com/BrainClient.html) - Core class, everything starts here
+* API: [BrainDevice](https://kramer-brain-client.netlify.com/BrainDevice.html) - Everything for working with devices
+* [Using with React](https://kramer-brain-client.netlify.com/tutorial-500-ReactUsage.html)
+* [Using with Angular](https://kramer-brain-client.netlify.com/tutorial-600-AngularUsage.html)
+* [Using with Vanilla JS](https://kramer-brain-client.netlify.com/tutorial-700-VanillaJSUsage.html)
 
 ## Install via NPM
 
