@@ -9,9 +9,6 @@ BrainClient.Logger = Logger;
 BrainClient.defer = defer;
 BrainClient.BrainDevice = BrainDevice;
 
-// module.exports = BrainClient;
-
-
 export {
 	BrainClient,
 	BrainDevice,
