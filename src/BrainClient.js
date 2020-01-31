@@ -898,7 +898,7 @@ export default class BrainClient extends EventEmitter {
 			};
 
 			const { ipAddress } = this;
-			const ws = this.ws = new WebSocket('ws://' + ipAddress + '/client');
+			const ws = this.ws = new WebSocket('ws://' + ipAddress + '/web-client');
 			ws.onopen    = _wsOpen;
 			ws.onclose   = _wsClose;
 			ws.onmessage = _wsMessage;
