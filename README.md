@@ -21,6 +21,8 @@ Latest API documentation is available at **[https://kramer-brain-client.netlify.
 $ npm install --save @kramer/brain-client
 ```
 
+*(NOTE: NPM is not published yet, pending full Kramer release of this library.)*
+
 ```javascript
 // ES6, Modules, React, Angular
 import { BrainClient } from '@kramer/brain-client';
@@ -34,10 +36,9 @@ const { BrainClient } = window.KramerBrainClient;
 ```
 
 ## CDN Usage
-The IIFE build is also available on unpkg (all versions) or Netlify (only the latest):
+The ES5 bundled build is available on Netlify:
 
 ```html
-<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/es5/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
 <script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
 ```
 
@@ -79,7 +80,7 @@ See all examples on GitHub at [https://github.com/kramer-control/brain-client/tr
 `BrainClient` is environment-agnostic - you can use it directly in `Node`, you can bundle it with `React`, `Vue`, or `Angular` application, or use it in a vanilla Javascript application with no bundling. The options are limited only by your imagination.
 
 ### Network Access Required
-As noted above, the device that runs `BrainClient` must have direct network access to the Brain for control. This usually is done via your local LAN (WiFi/ethernet), but you could use a VPN or other creative network solutions to access the Brain as well. As a rule, if you can open the IP of the brain (with port :8000) in your web browser on the device, then your `BrainClient` will work on that device.
+As noted above, the device that runs `BrainClient` must have direct network access to the Brain for control. This usually is done via your local LAN (WiFi/ethernet), but you could use a VPN or other creative network solutions to access the Brain as well. As a rule, if you can open the IP of the brain (with port `:8000`) in your web browser on the device, then your `BrainClient` will work on that device.
 
 ## Building
 

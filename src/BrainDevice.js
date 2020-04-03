@@ -76,7 +76,7 @@ class ErrorInvalidCommand extends Error {}
  * }
  * ```
  * 
- * Also see related tutorial: <a href='./tutorial-500-states.html'>Basics/Watching States</a>
+ * Also see related tutorial: <a href='./tutorial-300-states.html'>Basics/Watching States</a>
  * 
  * **<h3>Nota Bene</h3>**
  * *NOTE:* You should never call the constructor directly, devices will be created by 
@@ -376,6 +376,7 @@ export default class BrainDevice extends EventEmitter {
 	 * 
 	 * @param {string} key State ID or Name - throws {@link BrainDevice.ErrorInvalidState} if the ID/Name is not a defined custom state (must be defined in the KC Builder)
 	 * @param {any}    value Any valid value
+	 * @throws {BrainDevice.ErrorNotSystemDevice} {@link BrainDevice.ErrorNotSystemDevice} if the device is not a system device
 	 * @throws {BrainDevice.ErrorInvalidState} {@link BrainDevice.ErrorInvalidState} if ID/Name is not a defined custom state value 
 	 */
 	async setCustomState(key, value) {

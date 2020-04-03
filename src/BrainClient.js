@@ -178,12 +178,16 @@ export default class BrainClient extends EventEmitter {
 	 * 
 	 * If you pass an object like `{ param: "someParam", default: "some.host:8000" }`, BrainClient will check for `someParam=<whatever>` instead of "brainIp", and fallback to the value given in "default" if not found. 
 	 * 
-	 * In all cases, default is optional. If "auto" or "param" given and "default" not specified, it will fallback to the window origin (e.g. the host/port that the page using BrainClient was served from.) This "origin" mode is only really useful if you are taking advantage of the "bundle upload" mode in the Kramer UI of the SL brains to serve your custom javascript from the Brain's built-in webserver at the /bundle/ URL.
+	 * NOTE: Auto mode will not work server-side (e.g. from Node, etc) - it is designed specifically
+	 * for use client-side. If you try to use `{ auto: true }` or `{ param: ... }` on Node, 
+	 * your program will likely fail with an exception.
+	 * 
+	 * In all cases, default is optional. If "auto" or "param" given and "default" not specified, it will fallback to the window origin (e.g. the host/port that the page using BrainClient was served from.) This "origin" mode is only really useful if you are taking advantage of the "bundle upload" mode in the Kramer UI of the SL brains to serve your custom javascript from the Brain's built-in webserver at the `/bundle/` URL.
 	 * 
 	 * @param {string|object} ipAddress IP and optional port to connect to. Example: `10.0.1.123:8000`. Note: If you pass an object like `{ auto: true, default: 'something' }`, BrainClient will check the window querystring for 'brainIp=<whatever>', and if not found, will use the `default` param or origin host/port as brain IP if no `default` param given. You can also specify `param: "someOtherParam"` instead of `auto: true` to use a different query string param other than "brainIp".
-	 * @param {boolean=} ipAddress.auto If `true`, BrainClient will check the window query string for `brainIp=<whatever>`, and if not found, will use the origin host/port as brain IP. 
-	 * @param {string=} ipAddress.param BrainClient will use the `param` value to check the query string for an IP address (this will set `.auto` to true)
-	 * @param {string=} ipAddress.default If you use `.auto` or `.param` to turn on auto mode, and no IP is found in the query string, then BrainCient will fallback to `.default`. If `.default` is not given and `.auto` or `.param` is given, then BrainClient will instead fallback to the origin host/port serving the page.
+	 * @param {boolean=} ipAddress.auto If `true`, BrainClient will check the window query string for `brainIp=<whatever>`, and if not found, will use the origin host/port as brain IP. Not supported server-side, only useful when using BrainClient in a browser.
+	 * @param {string=} ipAddress.param BrainClient will use the `param` value to check the query string for an IP address (this will set `.auto` to true). Not supported server-side, only useful when using BrainClient in a browser.
+	 * @param {string=} ipAddress.default If you use `.auto` or `.param` to turn on auto mode, and no IP is found in the query string, then BrainCient will fallback to `.default`. If `.default` is not given and `.auto` or `.param` is given, then BrainClient will instead fallback to the origin host/port serving the page.  Not supported server-side, only useful when using BrainClient in a browser.
 	 * @param {object} opts Options to pass to the {@link BrainClient} constructor. See the constructor for all options honored. However, one option the constructor doesn't consume is the `pin` option, below.
 	 * @param {string|function} opts.pin PIN string or callback function to get PIN. Callback will only be executed if the Brain indicates a PIN is required. See {@link BrainClient#setupConnection} for more notes on the callback. 
 	 */
@@ -1050,7 +1054,7 @@ export default class BrainClient extends EventEmitter {
 		if (this._rxSubject && !this._rxSubject.isStopped) {
 			this._rxSubject.next({
 				event,
-				...data,
+				...(data || {}),
 			})
 		}
 	}
@@ -1111,7 +1115,8 @@ export default class BrainClient extends EventEmitter {
 
 					this._expressModePromise.resolve(true);
 
-					this.emit(BrainClient.EVENTS.EXPRESS_MODE, true);
+					// Needs to be an object payload for compat with our RxJS implementation
+					this.emit(BrainClient.EVENTS.EXPRESS_MODE, { enabled: true });
 
 					// Try default empty PIN first
 					this._attemptDefaultPinLogin();
@@ -1123,7 +1128,7 @@ export default class BrainClient extends EventEmitter {
 
 					this._expressModePromise.resolve(false);
 
-					this.emit(BrainClient.EVENTS.EXPRESS_MODE, false);
+					this.emit(BrainClient.EVENTS.EXPRESS_MODE, { enabled: false });
 				}
 			} break;
 
@@ -1239,6 +1244,8 @@ export default class BrainClient extends EventEmitter {
 	 * Send the PIN to the brain
 	 * 
 	 * Once you submit the pin, you can `await` {@link BrainClient#isAuthorized} or listen for `BrainClient.EVENTS.AUTHORIZED` to be notified when the authorization succeeeds.
+	 * 
+	 * If the pin submitted fails, the `BrainClient.EVENTS.PIN_REQUIRED` event will be emitted again, but the connection status will not change.
 	 * 
 	 * NOTE: Response returned as a separate event via the WebSocket
 	 * 
