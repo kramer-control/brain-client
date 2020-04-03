@@ -18,10 +18,10 @@ Latest API documentation is available at **[https://kramer-brain-client.netlify.
 ## Install via NPM
 
 ```shell
-$ npm install --save @kramer/brain-client
+$ npm install --save https://kramer-brain-client.netlify.com/dist/kramer-brain-client.tar.gz
 ```
 
-*(NOTE: NPM is not published yet, pending full Kramer release of this library.)*
+This library is not yet published NPM yet, but can be installed via the NPM CLI as shown above like any other package using the automatically-built tarball available at https://kramer-brain-client.netlify.com/dist/kramer-brain-client.tar.gz.
 
 ```javascript
 // ES6, Modules, React, Angular
@@ -45,13 +45,13 @@ The ES5 bundled build is available on Netlify:
 ## Example Connection
 
 ```javascript
-const BrainClient = require('@kramer/brain-client');
+const { BrainClient } = require('@kramer/brain-client');
 // If using <script> tag: const { BrainClient } = window.KramerBrainClient;
 // ES6 imports work too:  import { BrainClient } from '@kramer/brain-client';
 
 async function main() {
 	const bc = new BrainClient();
-	const brainInfo = await bc.connectToBrain("127.0.0.1:8080");
+	const brainInfo = await bc.connectToBrain("127.0.0.1:8000");
 	console.dir(brainInfo, { depth: 99 })
 }
 

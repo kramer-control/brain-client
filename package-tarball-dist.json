@@ -1,0 +1,34 @@
+{
+  "name": "@kramer/brain-client",
+  "version": "1.0.0",
+  "description": "Client for Kramer Control Brains",
+  "module": "index.js",
+  "main": "cjs/index.js",
+  "browser": "es5/kramer-brain-client.min.js",
+  "unpkg": "es5/kramer-brain-client.min.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kramer-control/brain-client"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "author": "Josiah Bryan <jbryan@kramerav.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/runtime": "^7.8.4",
+    "async-retry": "^1.2.3",
+    "bufferutil": "^4.0.1",
+    "events": "^3.0.0",
+    "isomorphic-fetch": "^2.2.1",
+    "isomorphic-ws": "^4.0.1",
+    "rxjs": "^6.5.4",
+    "usage-stats": "^0.9.4",
+    "utf-8-validate": "^5.0.2",
+    "ws": "^7.2.1"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0"
+  }
+}

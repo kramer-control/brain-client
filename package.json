@@ -18,7 +18,8 @@
     "coverage": "nyc npm run test",
     "build:docs": "jsdoc -c jsdoc.json",
     "build:rollup": "rollup --config",
-    "build:netlify": "npm run build:rollup && npm run build:docs && mv dist docs/dist",
+    "build:tarball": "rm -rf staging && mkdir staging && cp package-tarball-dist.json staging/package.json && cp -r src dist staging && cd staging && tar czvf ../dist/kramer-brain-client.tar.gz ./package.json src dist && cd ..",
+    "build:netlify": "npm run build:rollup && npm run build:docs && npm run build:tarball && mv dist docs/dist",
     "build": "npm run build:rollup && npm run build:docs && npm run test",
     "prepublishOnly": "npm run build",
     "publish:github": "git push github --all"
