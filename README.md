@@ -1,6 +1,18 @@
 # brain-js-client
 
-Stand-alone javascript client for [Kramer Control's Brains](https://www.kramerav.com/us/products/control-and-management/control-processors?groupId=3&subgroupId=284), also known as "processors" or "room controllers".
+Stand-alone javascript client for [Kramer Control's Brains](https://www.kramerav.com/us/products/control-and-management/control-processors?groupId=3&subgroupId=284#Control=118), also known as "processors" or "room controllers".
+
+This library **requires** Brain firmware version `2.4.0` or better, and is compatible with at least the following Brain devices:
+
+* SL-240 *(No longer in production)*
+* SL-240C
+* SL-280
+* KT-103 *(Not yet released)*
+* KT-107
+* KT-1010
+* Sony Bravia 
+* VIA Connect
+* KC-BRAINware 5/25/50 *(New product)*
 
 ## API Documentation
 
