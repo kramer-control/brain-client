@@ -33,7 +33,7 @@ Here's a simple example functional React component that uses hooks to access the
 ```javascript
 import React from 'react';
 import ReactDOM from 'react-dom';
-import BrainClient from '@kramer/brain-client';
+import BrainClient from '@kramerav/brain-client';
 
 function BrainSecondTicker({ ipAddress }) {
 	// getBrainClient does not need a hook because it is not async and always

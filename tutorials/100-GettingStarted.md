@@ -5,15 +5,15 @@
 ## Installation
 
 ```bash
-npm install --save @kramer/brain-client
+npm install --save @kramerav/brain-client
 ```
 
 ## Basic Usage
 
 ```javascript
-const BrainClient = require('@kramer/brain-client');
+const BrainClient = require('@kramerav/brain-client');
 // If using <script> tag: const { BrainClient } = window.KramerBrainClient;
-// ES6 imports work too:  import { BrainClient } from '@kramer/brain-client';
+// ES6 imports work too:  import { BrainClient } from '@kramerav/brain-client';
 
 async function main() {
 	const bc = new BrainClient();

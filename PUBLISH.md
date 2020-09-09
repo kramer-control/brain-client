@@ -9,7 +9,7 @@ git remote add --mirror=fetch github  git@kramer-control_brain-client.github.com
 Add to your `~/.ssh/config`:
 
 ```
-# @kramer/brain-client GitHub
+# @kramerav/brain-client GitHub
 Host kramer-control_brain-client.github.com
   Hostname github.com
   IdentityFile ~/.ssh/id_kramer-brainclient-github

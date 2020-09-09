@@ -26,7 +26,7 @@ However, a pattern we often use internally when working with BrainClient and Ang
 ```javascript
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
-import { BrainClient } from '@kramer/brain-client';
+import { BrainClient } from '@kramerav/brain-client';
 
 @Injectable()
 export class BrainClientService {

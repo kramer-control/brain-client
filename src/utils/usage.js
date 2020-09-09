@@ -1,4 +1,4 @@
-const CLIENT_APP_NAME = '@kramer/brain-client',
+const CLIENT_APP_NAME = '@kramerav/brain-client',
 	GOOGLE_APP_ID = 'UA-243284-44',
 	USAGE_CONFIG = [
 		GOOGLE_APP_ID, 

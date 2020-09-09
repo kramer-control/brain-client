@@ -5,9 +5,9 @@ A number of examples for connecting to the Brain are provided below.
 In each of the below examples, we assume you have imported the `BrainClient` class/namespace via some method. We also assume you are able to execute `await` functions (i.e. you're running inside a function marked `async`.)
 
 ```javascript
-const { BrainClient } = require('@kramer/brain-client');
+const { BrainClient } = require('@kramerav/brain-client');
 // If using <script> tag: const { BrainClient } = window.KramerBrainClient;
-// ES6 imports work too:  import { BrainClient } from '@kramer/brain-client';
+// ES6 imports work too:  import { BrainClient } from '@kramerav/brain-client';
 async function main() {
 	// whatever
 }
@@ -89,7 +89,7 @@ You can wrap the `getBrainClient` call in an `@Injectable` Angular service for c
 You can import this library via a `<script>` tag from one of the following CDNs:
 
 ```html
-<script src="https://unpkg.com/@kramer/brain-client@1.0.0/dist/es5/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
+<script src="https://unpkg.com/@kramerav/brain-client@1.0.0/dist/es5/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
 <script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
 ```
 

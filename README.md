@@ -37,10 +37,10 @@ This library is not yet published NPM yet, but can be installed via the NPM CLI 
 
 ```javascript
 // ES6, Modules, React, Angular
-import { BrainClient } from '@kramer/brain-client';
+import { BrainClient } from '@kramerav/brain-client';
 
 // For Node 8+
-const { BrainClient } = require('@kramer/brain-client');
+const { BrainClient } = require('@kramerav/brain-client');
 
 // Vanilla Javascript via the <script> tag
 const { BrainClient } = window.KramerBrainClient;
@@ -57,9 +57,9 @@ The ES5 bundled build is available on Netlify:
 ## Example Connection
 
 ```javascript
-const { BrainClient } = require('@kramer/brain-client');
+const { BrainClient } = require('@kramerav/brain-client');
 // If using <script> tag: const { BrainClient } = window.KramerBrainClient;
-// ES6 imports work too:  import { BrainClient } from '@kramer/brain-client';
+// ES6 imports work too:  import { BrainClient } from '@kramerav/brain-client';
 
 async function main() {
 	const bc = new BrainClient();

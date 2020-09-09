@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 
-import { BrainClient, ReactHooks } from '@kramer/brain-client';
+import { BrainClient, ReactHooks } from '@kramerav/brain-client';
 
 // Destructure ReactHooks for ease of referencing later in the example
 const { useDevice, useDeviceState, useConnectionStatus } = ReactHooks;
