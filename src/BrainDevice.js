@@ -245,11 +245,12 @@ export default class BrainDevice extends EventEmitter {
 		return this.device_driver_id === SYSTEM_DRIVER_ID;
 	}
 
-	async _ensureStateValues(specificStates=null) {
-		if(!this._hasStateChanges) {
+	async _ensureStateValues(specificStates = null, force=false) {
+		if(!this._hasStateChanges || force) {
 			
-			if (!this._statePromise)
+			if(!this._statePromise) {
 				this._statePromise = defer();
+			}
 
 			this._specificStates = specificStates;
 			this._watchStateChanges();
@@ -412,18 +413,8 @@ export default class BrainDevice extends EventEmitter {
 			}],
 		};
 
-		const actionMessage = {
-			method: 'POST',
-			path:   '/api/v1/send-macro',
-			body:   macro,
-			type:   'ws_message_wrapper'
-		};
-
-		// console.log("BrainDevice: Send set state macro: ");
-		// console.dir(actionMessage, { depth: 999 });
-
 		// send the macro
-		this._client.sendData(actionMessage);
+		this._client.wrapApiCall('send-macro', macro);
 
 		// wait for next update from brain
 		this._hasStateChanges = false;
@@ -449,6 +440,9 @@ export default class BrainDevice extends EventEmitter {
 	 * @throws {BrainDevice.ErrorInvalidCommand} Throws {@link BrainDevice.ErrorInvalidCommand} if given ID/Name not a defined command
 	 */
 	async sendCommand(key, params={}) {
+		// console.log(` * send command > ${key} > start`);
+		// await this._ensureStateValues(null, true);
+
 		const command = key.id ? key : this.getCommand(key);
 		if(!command) {
 			throw new ErrorInvalidCommand("Invalid command key " + key + " - does not match any known command Name or ID");
@@ -475,28 +469,19 @@ export default class BrainDevice extends EventEmitter {
 					}
 				}),
 			}]
-		}
-
-		let actionMessage = {
-			method: 'POST',
-			path:   '/api/v1/send-macro',
-			body:   macro,
-			type:   'ws_message_wrapper'
 		};
 
-		// console.log("BrainDevice: Send command macro: ");
-		// console.dir({actionMessage, command}, { depth: 999 });
-		
 		// send the macro
-		this._client.sendData(actionMessage);
+		this._client.wrapApiCall('send-macro', macro);
+
+		// console.log(` * send command > ${key} > command.states`, command.states);
 
 		// Setup specific hash so flags can be set
 		const specificStates = {};
 		Object.keys(command.states).forEach(id => specificStates[id] = false);
 		
 		// wait for next update from brain
-		this._hasStateChanges = false;
-		await this._ensureStateValues(specificStates);
+		await this._ensureStateValues(specificStates, true);
 
 		const results = {};
 
@@ -504,10 +489,10 @@ export default class BrainDevice extends EventEmitter {
 			results[id] = this._statesById[id].value;
 		});
 
+		// console.log(` * send command > ${key} > end`);
 		return results;
 	}
 
-	
 
 	/**
 	 * Attach an event listener to this device. If you pass the `STATE_CHANGED` event
@@ -632,48 +617,64 @@ export default class BrainDevice extends EventEmitter {
 			};
 
 			const state = this._statesById[id];
+			// if(id === 'TEMP_UNIT_STATE') {
+				// console.log(`${Date.now()}: stateChangeInternal: ..checking: state id=${id}:`, normalizedValue);
+			// }
+
 			if (state) {
 				state.value = value;
+
+				let newValue;
 				if(state.type === 'number') {
-					state.normalizedValue = parseFloat(normalizedValue);
+					newValue = parseFloat(normalizedValue);
 				} else {
-					state.normalizedValue = normalizedValue;
+					newValue = normalizedValue;
 				}
 
-				// console.log(`${Date.now()}: stateChangeInternal: updating state id=${id}:`, state)
+				if (state.normalizedValue !== newValue) {
+					const oldValue = state.normalizedValue;
+					state.normalizedValue = newValue;
+					
+					this.emit(BrainDevice.STATE_CHANGED, state); //normalizedChange)
 
+					// if(id === 'TEMP_UNIT_STATE') {
+					// 	console.log(`${Date.now()}: stateChangeInternal: **CHANGED** id=${id}: normalizedValue:`, normalizedValue, ', oldValue: ', oldValue);
+					// }
+
+					// Logger.getDefaultLogger().d(BrainDevice.LOG_TAG, "Device state changed, normalizedChange=", normalizedChange);
+
+					if (this._statePromise) {
+						let completed = true;
+
+						if (this._specificStates) {
+							completed = false;
+							if(this._specificStates[id] !== undefined) {
+								this._specificStates[id] = true;
+								// Only completed if all _specificStates set to true indicating all states are received
+								const remainingStates = Object.values(this._specificStates).filter(flag => flag === false);
+								completed = remainingStates.length === 0;
+
+								// if(id === 'TEMP_UNIT_STATE') {
+								// 	console.log("[___SPECIFIC_STATES___]", { id, specificStates: this._specificStates, completed, value });
+								// 	console.log(" ** ", remainingStates);
+								// }
+							}
+						}
+
+						if(completed) {
+							// console.log(` * process state changes, has _statePromise, but now completed, specificStates is:`, this._specificStates);
+							this._statePromise.resolve();
+							this._statePromise = null;
+							this._specificStates = null;
+						}
+					}
+				} else {
+					// State change event received, but value was not changed ...
+				}
 			} else {
 				// console.log("State ID not found in internal enum:", id, Object.keys(this._statesById));
 				Logger.getDefaultLogger().e(BrainDevice.LOG_TAG, "State ID not found in internal enum:", id, Object.keys(this._statesById));
 			}
-
-			// if(id !== 'SECOND_STATE')
-			// 	console.log(`${Date.now()}: stateChangeInternal: normalizedChange:`, normalizedChange)
-			// Logger.getDefaultLogger().d(BrainDevice.LOG_TAG, "Device state changed, normalizedChange=", normalizedChange);
-
-
-			if (this._statePromise) {
-				let completed = true;
-				if (this._specificStates && this._specificStates[id] !== undefined) {
-					this._specificStates[id] = true;
-					// Only completed if all _specificStates set to true indicating all states are received
-					const fl = Object.values(this._specificStates).filter(flag => flag);
-					completed = fl.length === 0;
-
-					// if(id !== 'SECOND_STATE') {
-					// 	console.log("[state change]", { id, s: this._specificStates, completed, value })
-					// 	console.log(" ** ", fl);
-					// }
-				}
-
-				if(completed) {
-					this._statePromise.resolve();
-					this._statePromise = null;
-				}
-			}
-
-
-			this.emit(BrainDevice.STATE_CHANGED, normalizedChange)
 		})
 	}
 }

@@ -190,6 +190,7 @@ export default class BrainClient extends EventEmitter {
 	 * @param {string=} ipAddress.default If you use `.auto` or `.param` to turn on auto mode, and no IP is found in the query string, then BrainCient will fallback to `.default`. If `.default` is not given and `.auto` or `.param` is given, then BrainClient will instead fallback to the origin host/port serving the page.  Not supported server-side, only useful when using BrainClient in a browser.
 	 * @param {object} opts Options to pass to the {@link BrainClient} constructor. See the constructor for all options honored. However, one option the constructor doesn't consume is the `pin` option, below.
 	 * @param {string|function} opts.pin PIN string or callback function to get PIN. Callback will only be executed if the Brain indicates a PIN is required. See {@link BrainClient#setupConnection} for more notes on the callback. 
+	 * @param {string} opts.auth String containing a JWT token to authenticate with the brain instead of using a PIN code.
 	 */
 	static getBrainClient(ipAddress, opts={}) {
 		ipAddress = this._tryAutoIpAddress(ipAddress)
@@ -203,7 +204,8 @@ export default class BrainClient extends EventEmitter {
 		// Start connection to Brain on next tick
 		// so that the caller can attach event listeners in case of CONNECTION_FAILURE, etc
 		setTimeout(() => {
-			bc.connectToBrain(ipAddress, (opts || {}).pin);
+			const data = opts || {};
+			bc.connectToBrain(ipAddress, data.pin, data.auth);
 		}, 0);
 
 		return bc;
@@ -228,8 +230,10 @@ export default class BrainClient extends EventEmitter {
 	 * @property BrainClient.DEFAULT_BRAIN_PORT {number} Default port for Brain (`8000`)
 	 * 
 	 * @param opts {object} Options for configuring the client, all optional, documented below
+	 * @param opts.remoteAuthorization {string} Data structure from nebula-web-ui for Remote Control via cloud
 	 * @param opts.reconnectWaitTime {number} Time to wait to try to reconnect a socket on disconnect or error in milliseconds (default to `1000` milliseconds)
-	 * @param opts.httpRequestTimeout {number} Timeout value for HTTP requests internally to the Brain. If the Brain takes longer than this parameter, the request will fail with a timeout. Defaults to `1000` milliseconds.
+	 * @param opts.requestTimeout {number} Timeout value for requests internally to the Brain. If the Brain takes longer than this parameter, the request will fail with a timeout. Defaults to `1000` milliseconds.
+	 * @params opts.connectionTimeout {number} Timeout value before a brain is considered unreachable. Defaults to `5000` milliseconds.
 	 * @param opts.disableAnalytics {boolean} Set to true to disable analytics collection via Google Analytics (defaults to `false`)
 	 * 
  	 */
@@ -239,8 +243,9 @@ export default class BrainClient extends EventEmitter {
 		this._ipAddressPromise = defer();
 
 		Object.assign(this.opts = {}, {
-			reconnectWaitTime:  1000,
-			httpRequestTimeout: 1000,
+			reconnectWaitTime:  DEFAULT_REQUEST_TIMEOUT,
+			requestTimeout:     DEFAULT_REQUEST_TIMEOUT,
+			connectionTimeout:  CONNECTION_TIMEOUT_MS,
 			disableAnalytics:   false,
 		}, opts || {});
 
@@ -262,19 +267,25 @@ export default class BrainClient extends EventEmitter {
 	 * 
 	 * @param {string} ipAddress IP address of Brain to connect to, with optional port, like "127.0.0.1:8000" - port defaults to 8000 if not specified
 	 * @param {string|function} pin PIN string or callback function to get PIN. Callback will only be executed if the Brain indicates a PIN is required. See {@link BrainClient#setupConnection} for more notes on the callback.
+	 * @param {string} auth Optional, JWT token to use to auth with brain instead of using the PIN
 	 * @throws {Error} May throw errors from {@link BrainClient#setupConnection} - see that method for Errors that could be thrown.
 	 */
-	async connectToBrain(ipAddress, pin) {
+	async connectToBrain(ipAddress, pin, auth) {
 		this.usage.track('connectToBrain', { ipAddress });
 
-		await this.prepareConnection(ipAddress);
+		await this.prepareConnection(ipAddress).catch(ex => {
+			// Don't log CONNECTION_FAILURE, we'll return that instead below
+			if(ex !== BrainClient.CONNECTION_FAILURE) {
+				Logger.getDefaultLogger().e(BrainClient.LOG_TAG, 'Caught error in prepareConnection' + JSON.stringify(ex));
+			}
+		})
 
 		// Bail out if failure
 		if(this.getConnectionStatus() === BrainClient.CONNECTION_FAILURE) {
 			return BrainClient.CONNECTION_FAILURE;
 		}
 
-		await this.setupConnection(pin);
+		await this.setupConnection(pin, auth);
 
 		// Return status
 		return this.getConnectionStatus();
@@ -314,18 +325,23 @@ export default class BrainClient extends EventEmitter {
 	 * 
 	 * @throws {Error} Throws {@link BrainClient.ErrorNotProvisioned}, {@link BrainClient.ErrorExpressModeDisabled}, or {@link BrainClient.ErrorClientNotInitalized}.
 	 */
-	async setupConnection(pin="") {
+	async setupConnection(pin="", auth="") {
 		this.usage.track('setupConnection');
 
 		await this._auditConnection(true);
 	
 		// isLoginNeeded returns true if the default "empty" pin doesn't work
 		if(await this.isLoginNeeded()) {
-			// TODO: Test coverage
-			if(typeof(pin) === 'function') {
-				pin = await pin();
+			if(auth) {
+				// TODO: Test coverage
+				this.submitAuthorization(auth);
+			} else {
+				// TODO: Test coverage
+				if(typeof(pin) === 'function') {
+					pin = await pin();
+				}
+				this.submitPin(pin);
 			}
-			this.submitPin(pin)
 		}
 	
 		// Wait for a final authorization to talk to the brain
@@ -360,8 +376,6 @@ export default class BrainClient extends EventEmitter {
 			throw new ErrorClientNotInitalized()
 		}
 		
-		const brainId = await this.brainId();
-
 		if(!await this.isProvisioned()) {
 			if(!throwErrors) {
 				// TODO: Test coverage
@@ -369,7 +383,7 @@ export default class BrainClient extends EventEmitter {
 			}
 
 			// TODO: Test coverage
-			throw new ErrorNotProvisioned("Brain " + brainId + " is NOT provisioned on brain " + this.ipAddress + " - BrainClient will not work");
+			throw new ErrorNotProvisioned("Brain is NOT provisioned on brain " + this.ipAddress + " - BrainClient will not work");
 		}
 	
 		if(!await this.isExpressModeEnabled()) {
@@ -378,7 +392,7 @@ export default class BrainClient extends EventEmitter {
 				return false;
 			}
 			// TODO: Test coverage
-			throw new ErrorExpressModeDisabled("Express mode NOT enabled on " + this.ipAddress + " (brain id " + brainId + ") - BrainClient will not work");
+			throw new ErrorExpressModeDisabled("Express mode NOT enabled on " + this.ipAddress + " - BrainClient will not work");
 		}
 
 		return true;
@@ -424,7 +438,7 @@ export default class BrainClient extends EventEmitter {
 	 */
 	_checkPort(ipAddress) {
 		// Normalize IP with default port if none specified
-		if (ipAddress.indexOf(':') < 0) {
+		if (ipAddress.indexOf(':') < 0 && !ipAddress.includes('://')) {
 			ipAddress += ':' + DEFAULT_BRAIN_PORT;
 		}
 
@@ -467,8 +481,8 @@ export default class BrainClient extends EventEmitter {
 		this._setConnectionStatus(BrainClient.CONNECTION_CONNECTING);
 
 		// Set below when express_mode_flag_msg received via socket
-		this.authRequired = false;
-		this.expressModeEnabled = false;
+		this.authRequired = undefined;
+		this.expressModeEnabled = undefined;
 		this.isAuthenticated = false;
 
 		// Cache devices by ID
@@ -483,18 +497,9 @@ export default class BrainClient extends EventEmitter {
 		this._authPromise = defer();
 		
 		// Setup REST API
+		// Only currently used to trigger restarts
+		// Everything else works over the websocket now.
 		this._connectHttp();
-
-		// Test connection
-		try {
-			await this.brainInfo();
-		} catch(ex) {
-			
-			// Bail out of prepareConnection with failure
-			return this._setConnectionStatus(BrainClient.CONNECTION_FAILURE);
-
-			// throw new Error("Error connecting to brain at " + ipAddress + ": "+ ex);
-		}
 
 		// Set flags
 		this._manuallyDisconnected = false;
@@ -502,6 +507,12 @@ export default class BrainClient extends EventEmitter {
 
 		// Assuming success, setup WebSocket connection
 		this._connectSocket();
+
+		// Start a timer to watch for websocket connection failures
+		this._connectFailureTimer = setTimeout(() => {
+			this._connectionPromise.reject(BrainClient.CONNECTION_FAILURE);
+			this._setConnectionStatus(BrainClient.CONNECTION_FAILURE);
+		}, this.opts.connectionTimeout || CONNECTION_TIMEOUT_MS);
 
 		// Add a watchdog to make sure we're getting states
 		// Note: We only enable the watchdog if a device 
@@ -525,7 +536,7 @@ export default class BrainClient extends EventEmitter {
 	_connectHttp() {
 		this.http = new HttpClient({
 			baseURL: 'http://' + this.ipAddress + '/api/v1/',
-			timeout: this.opts.httpRequestTimeout || DEFAULT_REQUEST_TIMEOUT
+			timeout: this.opts.requestTimeout || DEFAULT_REQUEST_TIMEOUT
 		});
 	}
 
@@ -535,18 +546,11 @@ export default class BrainClient extends EventEmitter {
 	 * @throws {Error} Throws an error if there is a problem talking to the brain
 	 */
 	async brainInfo() {
-		const res = await this.http.get('general');
-		if(res.timeout) {
-			throw new Error("brainInfo request timeout");
-		}
-		this._brainGeneralInfo = res.result;
-
-		if (this._isProvisionedPromise) {
-			this._isProvisionedPromise.resolve(this._brainGeneralInfo.brain_provisioned);
-			this._isProvisionedPromise = null;
-		}
-
-		return this._brainGeneralInfo;
+		const res = await this.callApiSync('general',
+			({ type }) => type === 'brain_status_message'
+		);
+		
+		return (this._brainGeneralInfo = res);
 	}
 
 	/**
@@ -558,8 +562,9 @@ export default class BrainClient extends EventEmitter {
 		if(!this.ipAddress) {
 			await this._ipAddressPromise;
 		}
+
 		await this.isProvisioned();
-		return this._brainGeneralInfo.brain_id;
+		return (await this.brainInfo()).brain_id;
 	}
 
 	/**
@@ -575,8 +580,13 @@ export default class BrainClient extends EventEmitter {
 		if(!this.ipAddress) {
 			await this._ipAddressPromise;
 		}
+		
 		if(this.isAuthenticated) {
 			return false;
+		}
+
+		if(this.authRequired !== undefined) {
+			return this.authRequired;
 		}
 
 		return await this._loginNeededPromise;
@@ -591,9 +601,11 @@ export default class BrainClient extends EventEmitter {
 		if(!this.ipAddress) {
 			await this._ipAddressPromise;
 		}
+
 		if(this.isAuthenticated) {
 			return true;
 		}
+
 		return await this._authPromise;
 	}
 
@@ -608,6 +620,7 @@ export default class BrainClient extends EventEmitter {
 		if(!this.ipAddress) {
 			await this._ipAddressPromise;
 		}
+
 		if (this.expressModeEnabled) {
 			return true;
 		}
@@ -624,9 +637,17 @@ export default class BrainClient extends EventEmitter {
 		if(!this.ipAddress) {
 			await this._ipAddressPromise;
 		}
-		if (this._brainGeneralInfo) {
-			return this._brainGeneralInfo.brain_provisioned;
-		}
+
+		await this._connectionPromise;
+
+		// this._isProvisioned is set by our websocket message handler
+		// when the brain_status_message is received
+		if (this._isProvisioned !== undefined &&
+			this._isProvisioned !== null) {
+			return this._isProvisioned;
+		};
+
+		this.queryProvisionedInfo();
 
 		return await this._isProvisionedPromise;
 	}
@@ -641,8 +662,8 @@ export default class BrainClient extends EventEmitter {
 			await this._ipAddressPromise;
 		}
 
-		if(!this.isConnected) {
-			await this._connectionPromise;
+		if(!this.isAuthenticated) {
+			await this._authPromise;
 		}
 
 		// JIT enumeration
@@ -667,8 +688,8 @@ export default class BrainClient extends EventEmitter {
 			await this._ipAddressPromise;
 		}
 
-		if(!this.isConnected) {
-			await this._connectionPromise;
+		if(!this.isAuthenticated) {
+			await this._authPromise;
 		}
 
 		// JIT enumeration
@@ -710,78 +731,75 @@ export default class BrainClient extends EventEmitter {
 	 * @private
 	 */
 	async _getSimpleDriver(driverId, versionNum=0) {
-		const data = await this.http.get('device-drivers/' + driverId + "?version=" + versionNum);
-		if(data.status === STATUS_SUCCESS) {
-			const { categories } = data.result;
+		const { categories } = await this.callApiSync(
+			`device-drivers/${driverId}?version=${versionNum}`, 
+			({ categories }) => !!categories
+		);
 
-			const _enumCommands = (capabilities, statesHash) => {
-				let result = [];
-				
-				capabilities.forEach(({ name, reference_id, commands }) => {
-					const capability = { name, reference_id };
-					commands.forEach(({ name, reference_id, codes }) => {
+		const _enumCommands = (capabilities, statesHash) => {
+			let result = [];
+			
+			capabilities.forEach(({ name, reference_id, commands }) => {
+				const capability = { name, reference_id };
+				commands.forEach(({ name, reference_id, codes }) => {
 
-						const dynamicParams = [];
-						const staticParams  = [];
+					const dynamicParams = [];
+					const staticParams  = [];
 
-						codes.forEach(( { state_references, parameters } ) => {
-							state_references.forEach(({ name, state_id, state_key /*, state_name */ }) => {
-								dynamicParams.push({
-									name,
-									state_key,
-									state: statesHash[state_id],
-								})
-							});
-
-							parameters.forEach(({ constraints, name, parameter_type }) => {
-								staticParams.push({
-									constraints,
-									name,
-									parameter_type
-								})
+					codes.forEach(( { state_references, parameters } ) => {
+						state_references.forEach(({ name, state_id, state_key /*, state_name */ }) => {
+							dynamicParams.push({
+								name,
+								state_key,
+								state: statesHash[state_id],
 							})
 						});
 
-						result.push({ capability, name, reference_id, staticParams, dynamicParams });
+						parameters.forEach(({ constraints, name, parameter_type }) => {
+							staticParams.push({
+								constraints,
+								name,
+								parameter_type
+							})
+						})
 					});
+
+					result.push({ capability, name, reference_id, staticParams, dynamicParams });
 				});
-
-				return result;
-			};
-
-			// Simplify a driver for easy reuse
-			const simple = {};
-			categories.forEach(({
-				name, reference_id, capabilities, states, macros 
-			}) => {
-				const stateList = states.map(({ name, reference_id, primitive_type }) => {
-					return { name, reference_id, primitive_type }
-				});
-
-				const statesHash = {};
-				stateList.forEach(state => {
-					statesHash[state.reference_id] = state;
-				})
-
-				simple[reference_id] = {
-					name,
-					reference_id,
-					commands: _enumCommands(capabilities, statesHash),
-					states: statesHash,
-					// Not used right now...
-					// macros: macros.map(({ name, reference_id }) => {
-					// 	return { name, reference_id }
-					// }),
-				}
 			});
 
+			return result;
+		};
 
-			// console.dir(simple, { depth: 100 });
-			return simple;
-		}
+		// Simplify a driver for easy reuse
+		const simple = {};
+		categories.forEach(({
+			name, reference_id, capabilities, states, macros 
+		}) => {
+			const stateList = states.map(({ name, reference_id, primitive_type }) => {
+				return { name, reference_id, primitive_type }
+			});
 
-		return null;
+			const statesHash = {};
+			stateList.forEach(state => {
+				statesHash[state.reference_id] = state;
+			})
 
+			simple[reference_id] = {
+				name,
+				reference_id,
+				commands: _enumCommands(capabilities, statesHash),
+				states: statesHash,
+				// Not used right now...
+				// macros: macros.map(({ name, reference_id }) => {
+				// 	return { name, reference_id }
+				// }),
+			}
+		});
+
+
+		// console.dir(simple, { depth: 100 });
+		return simple;
 	}
 
 	/**
@@ -797,37 +815,30 @@ export default class BrainClient extends EventEmitter {
 			return this._enumPromise;
 		this._enumPromise = defer();
 
-		const res = await this.http.get('devices');
+		const { devices } = await this.callApiSync('devices', ({ devices }) => !!devices);
 
-		if (res.status === STATUS_SUCCESS) {
-			const devices = res.result.devices;
-
-			await promiseMap(devices, async device => {
-				device.driver = await this._getSimpleDriver(
-					device.device_driver_id,
-					device.device_driver_version
-				).catch(ex => {
-					console.error("Error downloading driver id " + device.device_driver_id + ": " + ex);
-					device.driver = {
-						error: ex
-					}
-				});
-
-				// Create the actual object
-				if (this.devices[device.id]) {
-					this.devices[device.id]._updateData(device);
-				} else {
-					this.devices[device.id] = new BrainDevice(this, device);
+		await promiseMap(devices, async device => {
+			device.driver = await this._getSimpleDriver(
+				device.device_driver_id,
+				device.device_driver_version
+			).catch(ex => {
+				console.error("Error downloading driver id " + device.device_driver_id + ": " + ex);
+				device.driver = {
+					error: ex
 				}
 			});
 
-			// console.dir(devices, { depth: 100 })
-			this._enumPromise.resolve(this.devices);
-			this._enumPromise = null;
-		} else {
-			this._enumPromise.reject(res);
-			throw new Error("Error enumerating devices: " + res);
-		}
+			// Create the actual object
+			if (this.devices[device.id]) {
+				this.devices[device.id]._updateData(device);
+			} else {
+				this.devices[device.id] = new BrainDevice(this, device);
+			}
+		});
+
+		// console.dir(devices, { depth: 100 })
+		this._enumPromise.resolve(this.devices);
+		this._enumPromise = null;
 	}
 
 	/**
@@ -841,12 +852,14 @@ export default class BrainClient extends EventEmitter {
 			 * Event handler for WebSocket 'onopen' event
 			 * @private 
 			 */
-			const _wsOpen = () => {
+			const _wsOpen = async () => {
+				clearTimeout(this._connectFailureTimer);
 				this.isConnected = true;
 				this._manuallyDisconnected = false;
 				this._connectionPromise.resolve();
+
 				this.emit(BrainClient.EVENTS.WS_CONNECTED);
-				
+
 				if(this.opts.remoteAuthorization) {
 					this.sendRemoteAuthorization(this.opts.remoteAuthorization);
 					setTimeout(() => {
@@ -854,9 +867,9 @@ export default class BrainClient extends EventEmitter {
 							this.disconnect();
 							this._reconnectNeeded();
 						}
-					}, CONNECTION_TIMEOUT_MS);
+					}, this.opts.connectionTimeout || CONNECTION_TIMEOUT_MS);
+
 				} else {
-					// this.queryExpressModeEnabled();
 					this.queryProvisionedInfo();
 				}
 			},
@@ -883,7 +896,7 @@ export default class BrainClient extends EventEmitter {
 			_wsError = event => {
 				// TODO: test coverage of this branch
 				Logger.getDefaultLogger().e(BrainClient.LOG_TAG, 'Socket error: ' + event.data);
-				this._reconnectNeeded();
+				// this._reconnectNeeded();
 			},
 
 			/**
@@ -902,12 +915,17 @@ export default class BrainClient extends EventEmitter {
 			};
 
 			const { ipAddress } = this;
-			const ws = this.ws = new WebSocket('ws://' + ipAddress + '/web-client');
+			const socketUrl = ipAddress.startsWith('ws://')
+				? ipAddress
+				: `ws://${ipAddress}/web-client`;
+
+			const ws = this.ws = new WebSocket(socketUrl);
 			ws.onopen    = _wsOpen;
 			ws.onclose   = _wsClose;
 			ws.onmessage = _wsMessage;
 			ws.onerror   = _wsError;
 
+			
 			// Cache this client for future access via `getBrainClient`
 			if(!BrainClient._cachedBrainClients[ipAddress]) {
 				BrainClient._cachedBrainClients[ipAddress] = this;
@@ -935,8 +953,16 @@ export default class BrainClient extends EventEmitter {
 		this.isAuthenticated = false;
 		this._authPromise = defer();
 
-		if (this.ws && this.ws.readyState !== WS_CLOSED) {
-			this.ws.close();
+		if (this.ws) {
+			const { ws } = this;
+			if(ws.readyState !== WS_CLOSED) {
+				ws.close();
+			}
+			ws.onopen    = null;
+			ws.onclose   = null;
+			ws.onmessage = null;
+			ws.onerror   = null;
+			this.ws = null;
 		}
 
 		// Clear cache on disconnect
@@ -1069,11 +1095,14 @@ export default class BrainClient extends EventEmitter {
 	 * @param {object} data Data from the brain 
 	 * @private
 	 */	
-	async _incomingBrainEvent({ type, ...data }) {
-
+	async _incomingBrainEvent(msg) {
+		const { type, ...data } = msg;
+		
 		// Allow interested parties to receive all messages from the brain
-		this.emit(BrainClient.EVENTS.WS_MESSAGE, data);
-
+		this.emit(BrainClient.EVENTS.WS_MESSAGE, msg);
+		
+		// console.log(`[BrainClient debug] raw message: [${type}]`, data);
+		
 		let eventConsumed = false;
 		switch(type) {
 			case("brain_status_message"): {
@@ -1081,16 +1110,25 @@ export default class BrainClient extends EventEmitter {
 
 				const { brain_provisioned: isProvisioned } = data;
 				Logger.getDefaultLogger().d(BrainClient.LOG_TAG, 'Brain status message - provisioned: ', isProvisioned); 
+
 				this.emit(BrainClient.EVENTS.STATUS_MESSAGE, data);
+
+				// This flag is returned by isProvisioned() if not null/undefined
+				this._isProvisioned = !!isProvisioned;
+
+				// isProvisioned() waits on this promise if this._isProvisioned is null/undefined
+				if(this._isProvisionedPromise) {
+					this._isProvisionedPromise.resolve(this._isProvisioned);
+					this._isProvisionedPromise = null;
+				}
+
 
 				if(isProvisioned) {
 					if(!this.opts.remoteAuthorization) {
 						this.queryExpressModeEnabled();
-					} else {
-						// TODO: Do we need to set any flags for remote mode here?
 					}
 				} else {
-					// TODO: How should we handle this?
+					Logger.getDefaultLogger().d(BrainClient.LOG_TAG, 'Brain is not provisioned, nothing to do');
 				}
 			} break;
 			
@@ -1107,7 +1145,6 @@ export default class BrainClient extends EventEmitter {
 					 data['express_mode_enabled'] : false;
 
 				if(expressModeEnabled) {
-					this.authRequired       = true;
 					this.expressModeEnabled = true;
 					this.isAuthenticated    = false;
 
@@ -1121,8 +1158,6 @@ export default class BrainClient extends EventEmitter {
 					// Try default empty PIN first
 					this._attemptDefaultPinLogin();
 				} else {
-					// TODO: Test coverage of this branch
-					this.authRequired       = false;
 					this.expressModeEnabled = false;
 					this.isAuthenticated    = false;
 
@@ -1138,6 +1173,7 @@ export default class BrainClient extends EventEmitter {
 				// TODO: Test coverage of this branch
 				this.emit(BrainClient.EVENTS.PIN_REQUIRED);
 
+				this.authRequired = true;
 				this._loginNeededPromise.resolve(true);
 
 				this._setConnectionStatus(BrainClient.CONNECTION_UNAUTHORIZED);
@@ -1152,6 +1188,7 @@ export default class BrainClient extends EventEmitter {
 				//   token: "..." }
 				this.authorization   = data;
 				this.isAuthenticated = true;
+				this.authRequired    = false;
 
 				this.emit(BrainClient.EVENTS.AUTHORIZED);
 				this._loginNeededPromise.resolve(false);
@@ -1216,7 +1253,7 @@ export default class BrainClient extends EventEmitter {
 			} break;
 		}
 
-		if(!eventConsumed) {
+		if(!eventConsumed && type) {
 			const genericEvent = 
 				type.startsWith("handset_") ?
 					BrainClient.EVENTS.HANDSET_MESSAGE :
@@ -1252,12 +1289,32 @@ export default class BrainClient extends EventEmitter {
 	 * @param {string} pin 
 	 */
 	submitPin(pin) {
-		let pinMessage = {
-		  type: 'passcode_auth_msg',
-		  token: pin
+		const pinMessage = {
+			type: 'passcode_auth_msg',
+			token: pin
 		};
 		Logger.getDefaultLogger().d(BrainClient.LOG_TAG, 'Submitting pin to brain for authentication');
 		this.sendData(pinMessage);
+	}
+
+	/**
+	 * Send the Authorization token to the brain
+	 * 
+	 * Once you submit the token, you can `await` {@link BrainClient#isAuthorized} or listen for `BrainClient.EVENTS.AUTHORIZED` to be notified when the authorization succeeeds.
+	 * 
+	 * If the token submitted fails, the `BrainClient.EVENTS.PIN_REQUIRED` event will be emitted again, but the connection status will not change.
+	 * 
+	 * NOTE: Response returned as a separate event via the WebSocket
+	 * 
+	 * @param {string} authorization
+	 */
+	submitAuthorization(token) {
+		const message = {
+			type: 'jwt_auth_message',
+			token
+		};
+		Logger.getDefaultLogger().d(BrainClient.LOG_TAG, 'Submitting authorization to brain for authentication');
+		this.sendData(message);
 	}
 
 	/**
@@ -1290,6 +1347,60 @@ export default class BrainClient extends EventEmitter {
 		this.sendData(expressModeMessage);
 	}
 
+	wrapApiCall(apiPath, body=null, method=null) {
+		const message = {
+			method: !method && body ? 'POST' : (method || 'GET'),
+			path: '/api/v1/' + apiPath,
+			type: 'ws_message_wrapper'
+		};
+		
+		if(body) {
+			message.body = body;
+		}
+
+		// console.trace("wrapApiCall:", message);
+
+		this.sendData(message);
+	}
+
+	callApiSync(apiPath, filterCallback, body, method) {
+		if(typeof(filterCallback) !== 'function') {
+			throw new Error("Invalid filterCallback, must specify a function to filter data to receive")
+		}
+
+		const promise = defer();
+
+		// Predeclare timer since timer needs `callback`
+		let timer = null;
+
+		// Callback used to filter every message (using `filterCallback`)
+		// till filterCallback returns true (e.g. it finds the message that it needs
+		// as the return value)
+		const callback = msg => {
+			if(filterCallback(msg)) {
+				clearTimeout(timer);
+				this.off(BrainClient.EVENTS.WS_MESSAGE, callback);
+				promise.resolve(msg);
+			}
+		}
+
+		// For troubleshooting...
+		const stack = new Error().stack;
+
+		// This timer just rejects the promise if the filterCallback doesn't
+		// match a message within DEFAULT_REQUEST_TIMEOUT ms
+		timer = setTimeout(() => {
+			this.off(BrainClient.EVENTS.WS_MESSAGE, callback);
+			promise.reject("callApiSync timeout for apiPath: " + apiPath + ", stack: " + stack);
+		}, this.opts.requestTimeout);
+
+		this.on(BrainClient.EVENTS.WS_MESSAGE, callback);
+
+		this.wrapApiCall(apiPath, body, method);
+
+		return promise;
+	}
+
 	/**
 	 * Request the brain's gateway status.
 	 * 
@@ -1298,13 +1409,8 @@ export default class BrainClient extends EventEmitter {
 	 * NOTE: Response to this query is returned as a separate event via the WebSocket
 	 */
 	queryStatus() {
-		let queryStatusMessage = {
-			method: 'GET',
-			path: '/api/v1/status',
-			type: 'ws_message_wrapper'
-		};
 		Logger.getDefaultLogger().d(BrainClient.LOG_TAG, 'Querying brain status');
-		this.sendData(queryStatusMessage);
+		this.wrapApiCall('status')
 	}
 
 	/**
@@ -1313,13 +1419,8 @@ export default class BrainClient extends EventEmitter {
 	 * NOTE: Response to this query is returned as a separate event via the WebSocket
 	 */
 	queryHandsets() {
-		let queryHandsetsMessage = {
-			method: 'GET',
-			path: '/api/v1/space/query-handsets',
-			type: 'ws_message_wrapper'
-		};
 		Logger.getDefaultLogger().d(BrainClient.LOG_TAG, 'Querying handsets from brain');
-		this.sendData(queryHandsetsMessage);
+		this.wrapApiCall('space/query-handsets')
 	}
 
 	/**
@@ -1330,26 +1431,15 @@ export default class BrainClient extends EventEmitter {
 	 * @param {string} handsetId ID of the handset to requeset
 	 */
 	getHandsetLayout(handsetId) {
-		let getHandsetMessage = {
-			method: 'GET',
-			path: '/api/v1/space/layout/' + handsetId,
-			type: 'ws_message_wrapper'
-		};
 		Logger.getDefaultLogger().d(BrainClient.LOG_TAG, 'Getting handset from brain');
-		this.sendData(getHandsetMessage);
+		this.wrapApiCall('layout/' + handsetId);
 
-		let setHandsetMessage = {
-			method: 'POST',
-			path: '/api/v1/set-handset',
-			body: {
-				handset_id: handsetId,
-				watch: true,
-				type: 'set_handset_message'
-			},
-			type: 'ws_message_wrapper'
-		};
 		Logger.getDefaultLogger().d(BrainClient.LOG_TAG, 'Setting handset with brain');
-		this.sendData(setHandsetMessage);
+		this.wrapApiCall('set-handset', {
+			handset_id: handsetId,
+			watch: true,
+			type: 'set_handset_message'
+		});
 	}
 
 	/**
@@ -1359,19 +1449,13 @@ export default class BrainClient extends EventEmitter {
 	 * NOTE: To send actions/commands from specific devices, see {@link BrainDevice}. 
 	 */
 	sendAction(view_id, gesture, values, parameters=[]) { //?: Array<Object>) {
-		let actionMessage = {
-			method: 'POST',
-			path: '/api/v1/event',
-			body: {
-				view_id: view_id,
-				gesture: gesture,
-				values: values,
-				params: parameters,
-				type: 'ui_message'
-			},
-			type: 'ws_message_wrapper'
-		};
-		this.sendData(actionMessage);
+		this.wrapApiCall('event', {
+			view_id: view_id,
+			gesture: gesture,
+			values: values,
+			params: parameters,
+			type: 'ui_message'
+		},);
 	}
 
 	/**
@@ -1425,17 +1509,12 @@ export default class BrainClient extends EventEmitter {
 			watch: unwatch ? false : true,
 			type: 'watch_states_message'
 		};
-		
-		const actionMessage = {
-			method: 'POST',
-			path: '/api/v1/watch-states',
-			body: watchStatesMessage,
-			type: 'ws_message_wrapper'
-		};
+
+		this.wrapApiCall('watch-states', watchStatesMessage);
 
 		// console.log("[BrainClient.watchStates] ", watchStatesMessage);
 
-		this.sendData(actionMessage);
+		// this.sendData(actionMessage);
 	}
 
 	/**

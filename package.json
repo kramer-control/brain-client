@@ -14,6 +14,7 @@
     "examples": "examples"
   },
   "scripts": {
+    "build-and-test": "npm run build:rollup && npm run test",
     "test": "mocha --reporter spec",
     "coverage": "nyc npm run test",
     "build:docs": "jsdoc -c jsdoc.json",

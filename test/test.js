@@ -19,7 +19,7 @@ async function wait(done, f) {
 describe('#BrainClient', function() {
 
 	// Quiet chatty logging
-	BrainClient.Logger.setLogLevel(BrainClient.Logger.LogLevel.None);
+	// BrainClient.Logger.setLogLevel(BrainClient.Logger.LogLevel.None);
 
 	// Our client handle, created in first test
 	let bc;
@@ -54,9 +54,9 @@ describe('#BrainClient', function() {
 
 		const tag = "FOO_123";
 
-		// First, make sure nothing logged since we started quiet
-		impl.d(tag, tag);
-		expect(test.logged).to.equal(false);
+		// // First, make sure nothing logged since we started quiet
+		// impl.d(tag, tag);
+		// expect(test.logged).to.equal(false);
 
 		// Update log value for a few more tests
 		BrainClient.Logger.setLogLevel(BrainClient.Logger.LogLevel.Debug);
@@ -121,72 +121,62 @@ describe('#BrainClient', function() {
 
 	it('should connect to ' + BRAIN_IP, done => {
 		assertClient();
+
 		wait(done, async () => {
-
-			// Add coverage for promises that resolve AFTER connection but requested BEFORE
-			let hit; bc.getDevices().then(data => hit = data);
-			let hit2 = null; bc.isProvisioned().then(flag => hit2 = flag);
-			let hit3 = null; bc.isExpressModeEnabled().then(flag => hit3 = flag);
-			let hit4 = null; bc.isAuthorized().then(flag => hit4 = flag);
-			let hit5 = null; bc.isLoginNeeded().then(flag => hit5 = flag);
-			let hit6 = null; bc.getSystemDevice().then(flag => hit6 = flag);
-			let hit7 = null; bc.brainId().then(flag => hit7 = true);
-
 			const status = await bc.connectToBrain(BRAIN_IP);
+
 			expect(status).to.equal(BrainClient.CONNECTION_ACTIVE);
 
-			await new Promise(resolve => {
-				setTimeout(async ()=> {
-					// const hit = bc.devices;
-					// console.log(`[connect hit] hit length:`, Object.values(bc.devices).length)
+			const testData = {
+				hasDevices: Object.values(await bc.getDevices()).length > 0,
+				isProvisioned: await bc.isProvisioned(),
+				isExpressModeEnabled: await bc.isExpressModeEnabled(),
+				isAuthorized: await bc.isAuthorized(),
+				isLoginNeeded: await bc.isLoginNeeded(),
+				hasSystemDevice: !!(await bc.getSystemDevice()),
+				hasBrainId: !!(await bc.brainId()),
+			};
 
-					// Test that promises resolved that were set before connection
-					expect(hit).to.equal(bc.devices);
-					expect(hit2).to.equal(true);
-					expect(await bc.isProvisioned()).to.equal(true); // test connected code path
-					expect(hit3).to.equal(true);
-					expect(await bc.isExpressModeEnabled()).to.equal(true); // test connected code path
-					
-					// This isn't working..why?
-					// expect(hit4).to.equal(true);
-					// expect(await bc.isAuthorized()).to.equal(true);
-					
-					expect(hit5).to.equal(false);
-					expect(await bc.isLoginNeeded()).to.equal(false); // test connected code path
-					expect(hit6).to.equal(await bc.getSystemDevice()); // test connected code path
-					expect(hit7).to.equal(true);
+			// console.log("mark6", testData);
 
-					resolve();
-				}, 100);
-			});
+			expect(testData).to.deep.equal({ 
+				hasDevices: true,
+				isProvisioned: true,
+				isExpressModeEnabled: true,
+				isAuthorized: true,
+				isLoginNeeded: false,
+				hasSystemDevice: true,
+				hasBrainId: true
+			})
+
 		})
 	});
 
-	it('should test coverage of HTTP client', () => {
-		assertClient();
+	// it('should test coverage of HTTP client', () => {
+	// 	assertClient();
 
-		bc.http.post('general');
-		bc.http.patch('general');
-		bc.http.delete('general');
-		bc.http.setToken("123");
-		expect(bc.http.token).to.equal("123");
-		bc.http.setToken(null);
+	// 	bc.http.post('general');
+	// 	bc.http.patch('general');
+	// 	bc.http.delete('general');
+	// 	bc.http.setToken("123");
+	// 	expect(bc.http.token).to.equal("123");
+	// 	bc.http.setToken(null);
 
-		const x = () => {};
-		bc.http.setPendingCallback(x);
-		expect(bc.http.pendingCallback).to.equal(x);
+	// 	const x = () => {};
+	// 	bc.http.setPendingCallback(x);
+	// 	expect(bc.http.pendingCallback).to.equal(x);
 
-		expect(bc.http._encodeFields(null).length).to.equal(0);
+	// 	expect(bc.http._encodeFields(null).length).to.equal(0);
 
-		const url = '?' + bc.http._encodeFields({x:[0,1]}).join('&');
-		expect(url).to.equal("?x%5B0%5D=0&x%5B1%5D=1");
+	// 	const url = '?' + bc.http._encodeFields({x:[0,1]}).join('&');
+	// 	expect(url).to.equal("?x%5B0%5D=0&x%5B1%5D=1");
 
-		const url2 = '?' + bc.http._encodeFields({x:{a:true}}).join('&');
-		expect(url2).to.equal("?x%5Ba%5D=true");
+	// 	const url2 = '?' + bc.http._encodeFields({x:{a:true}}).join('&');
+	// 	expect(url2).to.equal("?x%5Ba%5D=true");
 
-		const url3 = '?' + bc.http._encodeFields({b:"c"}).join('&');
-		expect(url3).to.equal("?b=c");
-	});
+	// 	const url3 = '?' + bc.http._encodeFields({b:"c"}).join('&');
+	// 	expect(url3).to.equal("?b=c");
+	// });
 
 	// NOTE: Method removed from BrainClient, debating about re-adding...
 	// it('should query space name', () => {
@@ -252,7 +242,7 @@ describe('#BrainClient', function() {
 			const bc3 = new BrainClient({
 				// testing known-invalid address,
 				// no need to wait for a long response
-				httpRequestTimeout: 100
+				connectionTimeout: 100
 			});
 			const res = await bc3.connectToBrain("just.a.test.com:" + Math.ceil(Math.random() * 65536));
 			expect(res).to.equal(BrainClient.CONNECTION_FAILURE);
@@ -438,26 +428,18 @@ describe('#BrainClient', function() {
 			// also encodes a reference to the 'SYSTEM_STATE' state,
 			// the sendCommand() method automatically returns the new value
 			// of the state after executing the command 
-			const { SYSTEM_STATE: currentState } = await sys.sendCommand('QUERY_SYSTEM_USE');
+			const { normalizedValue: currentState } = await sys.getState('SYSTEM_STATE');
 			
 			// Flip the boolean value of the system state to the other side
-			const flippedState = currentState === 'OFF' ? 'ON' : 'OFF';
-
-			// console.log("*** send command start ***");
+			const expectedResult = currentState === 'OFF' ? 'ON' : 'OFF';
 
 			// Execute the SET_SYSTEM_USE command which accepts the 'SYSTEM_STATE' as a parameter
-			const { SYSTEM_STATE: newState } = await sys.sendCommand('SET_SYSTEM_USE', {
-				SYSTEM_STATE: flippedState
+			const { SYSTEM_STATE: actualResult } = await sys.sendCommand('SET_SYSTEM_USE', {
+				SYSTEM_STATE: expectedResult
 			});
 
-			// console.log("*** send command end ***", newState, flippedState);
-
 			// Test results
-			expect(newState).to.equal(flippedState);
-
-			setTimeout(() => {
-				process.exit();
-			}, 100);
+			expect(actualResult).to.equal(expectedResult);
 		})
 	});
 
@@ -485,5 +467,18 @@ describe('#BrainClient', function() {
 		bc.sendAction(value);
 		expect(bc._lastDataSent.path).to.equal('/api/v1/event');
 		expect(bc._lastDataSent.body.view_id).to.equal(value);
-	})
+	});
+
+	it('should disconnect at the end', done => {
+		assertClient();
+		wait(done, async () => {
+			bc.disconnect();
+			expect(bc.isConnected).to.equal(false);
+
+			// Exit intentionally because tests don't always stop due to the connection
+			setTimeout(() => {
+				process.exit();
+			}, 100);
+		});
+	});
 });
