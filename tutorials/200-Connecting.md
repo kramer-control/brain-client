@@ -89,8 +89,8 @@ You can wrap the `getBrainClient` call in an `@Injectable` Angular service for c
 You can import this library via a `<script>` tag from one of the following CDNs:
 
 ```html
-<script src="https://unpkg.com/@kramerav/brain-client@1.0.0/dist/es5/kramer-brain-client.min.js"></script> <!-- version 1.0.0 (current version), 21KB -->
-<script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
+<script src="https://unpkg.com/@kramerav/brain-client@1.1.1/dist/es5/kramer-brain-client.min.js"></script> <!-- version 1.1.1 (current version) -->
+<script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version -->
 ```
 
 When using via the `<script>` tag in your browser, the classes provided by this package are attached to the `window.KramerBrainClient` object. For example, to get the `BrainClient` class, use `window.KramerBrainClient.BrainClient`.

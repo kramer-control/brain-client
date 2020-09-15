@@ -30,10 +30,10 @@ Latest API documentation is available at **[https://kramer-brain-client.netlify.
 ## Install via NPM
 
 ```shell
-$ npm install --save https://kramer-brain-client.netlify.com/dist/kramer-brain-client.tar.gz
+$ npm i --save @kramerav/brain-client
 ```
 
-This library is not yet published NPM yet, but can be installed via the NPM CLI as shown above like any other package using the automatically-built tarball available at https://kramer-brain-client.netlify.com/dist/kramer-brain-client.tar.gz.
+## Node.js/Bundler Usage
 
 ```javascript
 // ES6, Modules, React, Angular
@@ -48,10 +48,11 @@ const { BrainClient } = window.KramerBrainClient;
 ```
 
 ## CDN Usage
-The ES5 bundled build is available on Netlify:
+The ES5 bundled build is available on UNPKG's CDN or Netlify's CDN:
 
 ```html
-<script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version, 21KB -->
+<script src="https://unpkg.com/@kramerav/brain-client@1.1.1/dist/es5/kramer-brain-client.min.js"></script> <!-- version 1.1.1 (current version) -->
+<script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version -->
 ```
 
 ## Example Connection
@@ -93,6 +94,10 @@ See all examples on GitHub at [https://github.com/kramer-control/brain-client/tr
 
 ### Network Access Required
 As noted above, the device that runs `BrainClient` must have direct network access to the Brain for control. This usually is done via your local LAN (WiFi/ethernet), but you could use a VPN or other creative network solutions to access the Brain as well. As a rule, if you can open the IP of the brain (with port `:8000`) in your web browser on the device, then your `BrainClient` will work on that device.
+
+This package (as written now) does work with Kramer's Cloud Services to remotely control brains via our always-on cloud connection to brains. We are using this module internally in parts of our stack to handle remote control communication (e.g. off-premise via the cloud) with Brains. However, since cloud control of Brains using this module requires access to as-yet-unpublished APIs internal to Kramer to generate the necessary access URLs, tokens, and authorizations which this module would need to access the brain, we do not (yet) support 3rd-party usage of this module for remote-control of Brains via the Kramer Cloud. 
+
+However, you can remote control your own private brains via reverse proxy from a cloud server, for example. Regardless, that is beyond the scope of what we officially support at the moment.
 
 ## Building
 

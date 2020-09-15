@@ -1,6 +1,6 @@
 {
   "name": "@kramerav/brain-client",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Client for Kramer Control Brains",
   "module": "src/index.js",
   "main": "dist/cjs/index.js",
@@ -23,7 +23,7 @@
     "build:netlify": "npm run build:rollup && npm run build:docs && npm run build:tarball && mv dist docs/dist",
     "build": "npm run build:rollup && npm run build:docs && npm run test:nobuild",
     "prepublishOnly": "npm run build",
-    "publish:github": "git push github --all"
+    "publish:github": "git push github --all && git push github --tags"
   },
   "files": [
     "src",
