@@ -33,6 +33,14 @@ Latest API documentation is available at **[https://kramer-brain-client.netlify.
 $ npm i --save @kramerav/brain-client
 ```
 
+You can also install directly from our Netlify build server/CDN which may be slightly newer than NPM, but always at least the same code as NPM:
+
+```shell
+$ npm i --save https://kramer-brain-client.netlify.com/dist/kramer-brain-client.tar.gz
+```
+
+You can also import the bundled client directly from CDNs, see 'CDN Usage', below.
+
 ## Node.js/Bundler Usage
 
 ```javascript

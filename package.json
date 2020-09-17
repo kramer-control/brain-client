@@ -3,7 +3,7 @@
   "version": "1.1.1",
   "description": "Client for Kramer Control Brains",
   "module": "src/index.js",
-  "main": "dist/cjs/index.js",
+  "main": "index.js",
   "browser": "dist/es5/kramer-brain-client.min.js",
   "unpkg": "dist/es5/kramer-brain-client.min.js",
   "repository": {

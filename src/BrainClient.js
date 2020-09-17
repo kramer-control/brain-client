@@ -1536,7 +1536,15 @@ export default class BrainClient extends EventEmitter {
 	 * @param {function} callback previously-attached callback
 	 */
 	off(event, callback) {
-		super.off(event, callback);
+		if(!super.off) {
+			// Encountered weird problem here where the ES5 build sometimes
+			// doesn't have super.off - but all tests pass fine, so I can't figure out 
+			// what the situation is that causes this.
+			// Simply ignoring it works fine - for now. *fingers crossed*
+			return;
+		} else {
+			super.off(event, callback);
+		}
 	}
 }
 

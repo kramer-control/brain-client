@@ -29,20 +29,22 @@ npm run publish:github
 ```
 
 ## Publish to NPM
+
+*Prereq:*
+You must be logged into an NPM account that is part of the `@kramerav` NPM org. Logging into NPM is out of scope of this doc, Google is your friend.
+
 1. Safety Checks:
-  1. `git pull`
-  2. `git status`
-  3. `npm ci`
-  4. `npm test`
+    * `git pull`
+    * `git status`
+    * `npm ci`
+    * `npm test`
 2. Prepare the Release:
-  1. `npm run build`
-  2. `Update the Changelog`
+    * `npm run build`
+    * Update `CHANGELOG.md`
 3. Update the Version Number:
-  * `npm version [major|minor|patch]`
-  * Or manually update version in package.json & package-lock.json
-    1. `git commit -am '2.0.0'`
-    2. `git tag v2.0.0`
-4. Publish to npm:
-  `npm publish --access public`
-5. Publish to Git:
-  `git push && git push --tags && npm run publish:github`
+    * `npm version [major|minor|patch]`
+    * Or manually update version in package.json & package-lock.json, then `git commit -am '2.0.0'` and `git tag -a v2.0.0 -m "Version 2.0.0" <hash>`
+4. Publish to npm: `npm publish --access public`
+5. Publish to Git: `git push && git push --tags && npm run publish:github`
+
+Good reference: https://cloudfour.com/thinks/how-to-publish-an-updated-version-of-an-npm-package/
