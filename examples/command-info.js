@@ -14,7 +14,7 @@ async function main() {
 	const sys = await bc.getSystemDevice();
 
 	// Get the specific command
-	const command = sys.getCommand('SET_SYSTEM_USE');
+	const command = await sys.getCommand('SET_SYSTEM_USE');
 
 	// Output some info
 	console.dir(command, { depth: 99 })

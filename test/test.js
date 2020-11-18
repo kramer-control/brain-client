@@ -324,8 +324,13 @@ describe('#BrainClient', function() {
 		wait(done, async () => {
 			const p = BrainClient.defer();
 			const sc = ({ status }) => {
-				if(status === BrainClient.CONNECTION_SYNCHRONIZING) {
-					p.resolve();
+				if(status !== BrainClient.CONNECTION_ACTIVE) {
+					setTimeout(() => {
+						// Give it time before we resolve so other tests don't fail
+						p.resolve();
+						// Could improve this by now waiting for it to go active again,
+						// but that's an improvement for another day.
+					}, 1500);
 				}
 			};
 			bc.on(BrainClient.EVENTS.CONNECTION_STATUS_CHANGED, sc);
@@ -336,7 +341,7 @@ describe('#BrainClient', function() {
 			setTimeout(() => {
 				if(ok)
 					return;
-				throw new Error("Never found CONNECTION_SYNCHRONIZING");
+				throw new Error("Never found anything other than CONNECTION_ACTIVE");
 			}, 1900);
 			
 			await p;

@@ -1,6 +1,6 @@
 {
   "name": "@kramerav/brain-client",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Client for Kramer Control Brains",
   "module": "src/index.js",
   "main": "index.js",

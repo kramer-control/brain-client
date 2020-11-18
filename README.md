@@ -18,6 +18,19 @@ This library **requires** Brain firmware version `2.4.0` or better, and is compa
 
 Latest API documentation is available at **[https://kramer-brain-client.netlify.com/](https://kramer-brain-client.netlify.com/)**
 
+## Important Changes in Latest Release
+
+In previous releases, all the drivers for every device were downloaded by the client when connecting to the brain. To save on processing and
+load, we've moved to a JIT-download model internally. 
+
+The API stays the same for the most part, with the exception of `BrainDevice.getCommand` and `.getCommands` - these functions are
+now `async` to allow us to download the driver if not already downloaded at the moment you call them. The driver download only happens once,
+future calls to those methods do not incur the download. Note that this mirrors the API for `BrainDevice.getState` and `.getStates` from 
+previous versions were already `async`. 
+
+If you use either of those methods (which you likely do), please make sure you change your calls to `await` the result of `.getCommand` instead
+of using the return directly, because now the return will be a `Promise` which likely is not what you are expecting currently.
+
 ## Getting Started
 
 * See the [Getting Started Tutorial](https://kramer-brain-client.netlify.com/tutorial-100-GettingStarted.html)
@@ -39,9 +52,16 @@ You can also install directly from our Netlify build server/CDN which may be sli
 $ npm i --save https://kramer-brain-client.netlify.com/dist/kramer-brain-client.tar.gz
 ```
 
-You can also import the bundled client directly from CDNs, see 'CDN Usage', below.
+## CDN Usage
+You can also import the bundled client directly without installing from NPM. 
+The ES5 bundled build is available on UNPKG's CDN or Netlify's CDN:
 
-## Node.js/Bundler Usage
+```html
+<script src="https://unpkg.com/@kramerav/brain-client/dist/es5/kramer-brain-client.min.js"></script> <!-- always latest NPM version, see UNPKG docs on how to pin to a specific version -->
+<script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version -->
+```
+
+## Importing Into Your Code
 
 ```javascript
 // ES6, Modules, React, Angular
@@ -53,14 +73,6 @@ const { BrainClient } = require('@kramerav/brain-client');
 // Vanilla Javascript via the <script> tag
 const { BrainClient } = window.KramerBrainClient;
 
-```
-
-## CDN Usage
-The ES5 bundled build is available on UNPKG's CDN or Netlify's CDN:
-
-```html
-<script src="https://unpkg.com/@kramerav/brain-client@1.1.1/dist/es5/kramer-brain-client.min.js"></script> <!-- version 1.1.1 (current version) -->
-<script src='https://kramer-brain-client.netlify.com/dist/es5/kramer-brain-client.min.js'></script> <!-- always latest version -->
 ```
 
 ## Example Connection

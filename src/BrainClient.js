@@ -79,7 +79,7 @@ class ConnectionWatchdog {
 			return;
 		this._enabled = true;
 
-		const sys = this.sys = await this.client.getDevice('System Device');
+		const sys = this.sys = await this.client.getSystemDevice();
 		if(sys) {
 			// Subscribe to state changes on System Device
 			// System Device should emit a state chnage every 1000ms due to the
@@ -97,7 +97,7 @@ class ConnectionWatchdog {
 	}
 
 	restartDeadmanTimer() {
-		// console.log(`[ConnectionWatchdog] + Received state change, restarting timer`);
+		console.log(`[ConnectionWatchdog] + Received state change, restarting timer`);
 
 		clearTimeout(this.deadmanTimer);
 		this.deadmanTimer = setTimeout(() => {
@@ -673,8 +673,12 @@ export default class BrainClient extends EventEmitter {
 			this._devicesEnumerated = true;
 		}
 
-		return Object.values(this.devices)
-			.find(d => d.device_driver_id === SYSTEM_DRIVER_ID)		
+		const sys = Object.values(this.devices)
+			.find(d => d.device_driver_id === SYSTEM_DRIVER_ID);
+
+		await sys._ensureDriver();
+
+		return sys;
 	}
 
 	/**
@@ -713,6 +717,10 @@ export default class BrainClient extends EventEmitter {
 			const foundDevice = 
 				deviceLookup[deviceNameOrId] || 
 				Object.values(deviceLookup).find(dev => dev.name === deviceNameOrId);
+
+			if(foundDevice) {
+				await foundDevice._ensureDriver();
+			}
 			return foundDevice;
 		} else {
 			// TODO do we need to test this branch?
@@ -731,72 +739,76 @@ export default class BrainClient extends EventEmitter {
 	 * @private
 	 */
 	async _getSimpleDriver(driverId, versionNum=0) {
-		const { categories } = await this.callApiSync(
-			`device-drivers/${driverId}?version=${versionNum}`, 
-			({ categories }) => !!categories
-		);
+		const simple = {};
 
-		const _enumCommands = (capabilities, statesHash) => {
-			let result = [];
-			
-			capabilities.forEach(({ name, reference_id, commands }) => {
-				const capability = { name, reference_id };
-				commands.forEach(({ name, reference_id, codes }) => {
+		try {
+			const { categories } = await this.callApiSync(
+				`device-drivers/${driverId}?version=${versionNum}`, 
+				({ categories }) => !!categories
+			);
 
-					const dynamicParams = [];
-					const staticParams  = [];
+			const _enumCommands = (capabilities, statesHash) => {
+				let result = [];
+				
+				capabilities.forEach(({ name, reference_id, commands }) => {
+					const capability = { name, reference_id };
+					commands.forEach(({ name, reference_id, codes }) => {
 
-					codes.forEach(( { state_references, parameters } ) => {
-						state_references.forEach(({ name, state_id, state_key /*, state_name */ }) => {
-							dynamicParams.push({
-								name,
-								state_key,
-								state: statesHash[state_id],
+						const dynamicParams = [];
+						const staticParams  = [];
+
+						codes.forEach(( { state_references, parameters } ) => {
+							state_references.forEach(({ name, state_id, state_key /*, state_name */ }) => {
+								dynamicParams.push({
+									name,
+									state_key,
+									state: statesHash[state_id],
+								})
+							});
+
+							parameters.forEach(({ constraints, name, parameter_type }) => {
+								staticParams.push({
+									constraints,
+									name,
+									parameter_type
+								})
 							})
 						});
 
-						parameters.forEach(({ constraints, name, parameter_type }) => {
-							staticParams.push({
-								constraints,
-								name,
-								parameter_type
-							})
-						})
+						result.push({ capability, name, reference_id, staticParams, dynamicParams });
 					});
-
-					result.push({ capability, name, reference_id, staticParams, dynamicParams });
 				});
+
+				return result;
+			};
+
+			// Simplify a driver for easy reuse
+			categories.forEach(({
+				name, reference_id, capabilities, states, macros 
+			}) => {
+				const stateList = states.map(({ name, reference_id, primitive_type }) => {
+					return { name, reference_id, primitive_type }
+				});
+
+				const statesHash = {};
+				stateList.forEach(state => {
+					statesHash[state.reference_id] = state;
+				})
+
+				simple[reference_id] = {
+					name,
+					reference_id,
+					commands: _enumCommands(capabilities, statesHash),
+					states: statesHash,
+					// Not used right now...
+					// macros: macros.map(({ name, reference_id }) => {
+					// 	return { name, reference_id }
+					// }),
+				}
 			});
-
-			return result;
-		};
-
-		// Simplify a driver for easy reuse
-		const simple = {};
-		categories.forEach(({
-			name, reference_id, capabilities, states, macros 
-		}) => {
-			const stateList = states.map(({ name, reference_id, primitive_type }) => {
-				return { name, reference_id, primitive_type }
-			});
-
-			const statesHash = {};
-			stateList.forEach(state => {
-				statesHash[state.reference_id] = state;
-			})
-
-			simple[reference_id] = {
-				name,
-				reference_id,
-				commands: _enumCommands(capabilities, statesHash),
-				states: statesHash,
-				// Not used right now...
-				// macros: macros.map(({ name, reference_id }) => {
-				// 	return { name, reference_id }
-				// }),
-			}
-		});
-
+		} catch(ex) {
+			console.error(`Error processing driver from brain:`, ex);
+		}
 
 		// console.dir(simple, { depth: 100 });
 		return simple;
@@ -817,16 +829,20 @@ export default class BrainClient extends EventEmitter {
 
 		const { devices } = await this.callApiSync('devices', ({ devices }) => !!devices);
 
+		const JIT_DRIVER_DOWNLOAD = true;
+
 		await promiseMap(devices, async device => {
-			device.driver = await this._getSimpleDriver(
-				device.device_driver_id,
-				device.device_driver_version
-			).catch(ex => {
-				console.error("Error downloading driver id " + device.device_driver_id + ": " + ex);
-				device.driver = {
-					error: ex
-				}
-			});
+			if(!JIT_DRIVER_DOWNLOAD) {
+				device.driver = await this._getSimpleDriver(
+					device.device_driver_id,
+					device.device_driver_version
+				).catch(ex => {
+					console.error("Error downloading driver id " + device.device_driver_id + ": " + ex);
+					device.driver = {
+						error: ex
+					}
+				});
+			}
 
 			// Create the actual object
 			if (this.devices[device.id]) {
@@ -839,6 +855,16 @@ export default class BrainClient extends EventEmitter {
 		// console.dir(devices, { depth: 100 })
 		this._enumPromise.resolve(this.devices);
 		this._enumPromise = null;
+	}
+
+	async _getDriver(device) {
+		return await this._getSimpleDriver(
+			device.device_driver_id,
+			device.device_driver_version
+		).catch(ex => {
+			console.error("Error downloading driver id " + device.device_driver_id + ": " + ex);
+			return null;
+		});
 	}
 
 	/**
@@ -1491,9 +1517,10 @@ export default class BrainClient extends EventEmitter {
 		if(!device_id) {
 			throw new Error("device_id required");
 		}
-
+	
+		// Update: Not using watchdog right now, causes too many weird problems
 		// Only enable watchdog if a device is ACTUALLY watching for states
-		this.watchdog.enable();
+		// this.watchdog.enable();
 
 		// From what I can tell on the brain,
 		// there is no actual filtering of events based on states changed.

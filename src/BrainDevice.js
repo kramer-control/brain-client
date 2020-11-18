@@ -104,7 +104,7 @@ export default class BrainDevice extends EventEmitter {
 
 		// Enum commands and states
 		this._updateData(deviceDataWithDriver);
-
+		
 		// So we don't call multiple _watchStateChanges when getState/getStates
 		this._hasStateChanges = false;
 	}
@@ -161,6 +161,10 @@ export default class BrainDevice extends EventEmitter {
 	}
 
 	_enumDriver() {
+		if(!this.driver) {
+			return;
+		}
+
 		this._commandsById = {};
 		this._commandsByName = {};
 
@@ -245,7 +249,16 @@ export default class BrainDevice extends EventEmitter {
 		return this.device_driver_id === SYSTEM_DRIVER_ID;
 	}
 
+	// JIT download of driver, only for devices actually used in the project
+	async _ensureDriver() {
+		if(!this.driver) {
+			this.driver = await this._client._getDriver(this);
+			this._enumDriver();
+		}
+	}
+
 	async _ensureStateValues(specificStates = null, force=false) {
+		await this._ensureDriver();
 		if(!this._hasStateChanges || force) {
 			
 			if(!this._statePromise) {
@@ -298,19 +311,26 @@ export default class BrainDevice extends EventEmitter {
 
 	/**
 	 * Get hash of commands with keys being the ID and the values being the info about the command
+	 * 
+	 * NOTE: This command is now async, so you must `await` the result. This is async so we can JIT download
+	 * the driver instead of downloading every driver for every device in a space.
 	 *
 	 * Also see related tutorial: <a href='./tutorial-400-sendingcommands.html'>Basics/Sending Commands</a>
 	 * 
 	 * See {@link BrainDevice#getCommand} for documentation on what each command looks like.
 	 * 
 	 */
-	getCommands() {
+	async getCommands() {
+		await this._ensureDriver();
 		return this._commandsById;
 	}
 
 	/**
 	 * Get an object describing the requested command, or `null` if if the command doesn't exist. This is the same object
 	 * as returned from {@link BrainDevice#getCommands} as the value associated with each command ID.
+	 * 
+	 * NOTE: This command is now async, so you must `await` the result. This is async so we can JIT download
+	 * the driver instead of downloading every driver for every device in a space.
 	 * 
 	 * An example return value from this method would look like:
 	 * ```javascript
@@ -363,7 +383,8 @@ export default class BrainDevice extends EventEmitter {
 	 * @param {string} key Command ID or Name
 	 * @returns {object|null} Returns an object describing the command or `null` if the command doesn't exist
 	 */
-	getCommand(key) {
+	async getCommand(key) {
+		await this._ensureDriver();
 		return this._commandsById[key] || this._commandsByName[key];
 	}
 
@@ -443,7 +464,7 @@ export default class BrainDevice extends EventEmitter {
 		// console.log(` * send command > ${key} > start`);
 		// await this._ensureStateValues(null, true);
 
-		const command = key.id ? key : this.getCommand(key);
+		const command = key.id ? key : await this.getCommand(key);
 		if(!command) {
 			throw new ErrorInvalidCommand("Invalid command key " + key + " - does not match any known command Name or ID");
 		}
@@ -511,10 +532,11 @@ export default class BrainDevice extends EventEmitter {
 	 * @param {string} event Name of the event to watch
 	 * @param {function} callback Your event handler callback
 	 */
-	on(event, callback) {
+	async on(event, callback) {
 		super.on(event, callback);
 
 		if(event === BrainDevice.STATE_CHANGED) {
+			await this._ensureDriver();
 			this._watchStateChanges();
 			// console.warn("[Device] listener attached, starting watch for ", this.id, this.name)
 		}
@@ -576,7 +598,8 @@ export default class BrainDevice extends EventEmitter {
 
 	// [internal] Called from BrainClient when receiving a state_change_event
 	// with this device's device ID
-	processStateChanges(stateChangeList) {
+	async processStateChanges(stateChangeList) {
+		await this._ensureDriver();
 		this._hasStateChanges = true;
 
 		/* Sample:
@@ -673,7 +696,14 @@ export default class BrainDevice extends EventEmitter {
 				}
 			} else {
 				// console.log("State ID not found in internal enum:", id, Object.keys(this._statesById));
-				Logger.getDefaultLogger().e(BrainDevice.LOG_TAG, "State ID not found in internal enum:", id, Object.keys(this._statesById));
+				if(!this.warnedMissing) {
+					this.warnedMissing = {}
+				}
+				
+				if(!this.warnedMissing[id]) {
+					this.warnedMissing[id] = true;
+					Logger.getDefaultLogger().e(BrainDevice.LOG_TAG, "State ID not found in internal enum:", id, Object.keys(this._statesById));
+				}
 			}
 		})
 	}
